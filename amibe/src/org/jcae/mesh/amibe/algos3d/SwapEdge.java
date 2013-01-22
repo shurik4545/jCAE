@@ -43,7 +43,6 @@ public class SwapEdge extends AbstractAlgoHalfEdge
 	private int counter = 0;
 	/** Swap only if the quality is improved by at least this factory */
 	private double minQualityFactor;
-	private double minCosAfterSwap = -2;
 	private boolean expectInsert = true;
 	/**
 	 * Creates a <code>SwapEdge</code> instance.
@@ -73,10 +72,6 @@ public class SwapEdge extends AbstractAlgoHalfEdge
 			{
 				minCos = Double.parseDouble(val);
 				LOGGER.fine("Minimum dot product of face normals allowed for swapping an edge: "+minCos);
-			}
-			else if(key.equals("minCosAfterSwap"))
-			{
-				minCosAfterSwap = Double.parseDouble(val);
 			}
 			else if(key.equals("minQualityFactor"))
 			{
@@ -120,17 +115,13 @@ public class SwapEdge extends AbstractAlgoHalfEdge
 			coplanarity = -2.0;
 		}
 
-		return - e.checkSwap3D(mesh, coplanarity, 0, minQualityFactor,
-			expectInsert, minCosAfterSwap, -2.0);
+		return - e.checkSwap3D(mesh, coplanarity, 0, minQualityFactor, expectInsert);
 	}
 	
 	@Override
 	public boolean canProcessEdge(HalfEdge current)
 	{
-		boolean attr = current.hasAttributes(AbstractHalfEdge.IMMUTABLE |
-			AbstractHalfEdge.OUTER | AbstractHalfEdge.SHARP |
-			AbstractHalfEdge.BOUNDARY | AbstractHalfEdge.NONMANIFOLD);
-		return counter > 0 && !attr && current.canSwapTopology();
+		return counter > 0 && !current.hasAttributes(AbstractHalfEdge.IMMUTABLE | AbstractHalfEdge.OUTER | AbstractHalfEdge.SHARP | AbstractHalfEdge.BOUNDARY | AbstractHalfEdge.NONMANIFOLD);
 	}
 
 	@Override

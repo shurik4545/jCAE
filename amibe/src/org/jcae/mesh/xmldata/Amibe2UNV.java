@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
  *
- * (C) Copyright 2007-2012 by EADS France
+ * (C) Copyright 2007,2008,2009, by EADS France
  */
 
 package org.jcae.mesh.xmldata;
@@ -26,15 +26,13 @@ import org.jcae.mesh.xmldata.AmibeReader.SubMesh;
 import org.jcae.mesh.xmldata.MeshExporter.UNV.Unit;
 import java.io.File;
 import java.io.PrintStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 import org.xml.sax.SAXException;
 
@@ -70,24 +68,19 @@ public class Amibe2UNV
 			e.printStackTrace();
 		}
 	}
-	private final String directory;
+	private final File directory;
 	private final MeshExporter.UNV unvWriter;
 	private double scale = 1.0;
 	
 	/**
 	 * @param directory The directory which contain 3d files
 	 */
-	public Amibe2UNV(String directory)
-	{
-		this.directory=directory;
-		this.unvWriter = new MeshExporter.UNV(directory);
-	}
-
 	public Amibe2UNV(File directory)
 	{
-		this(directory.getPath());
+		this.directory=directory;
+		this.unvWriter = new MeshExporter.UNV(directory.getPath());
 	}
-
+	
 	public void setUnit(Unit unit)
 	{
 		unvWriter.setUnit(unit);
@@ -107,7 +100,7 @@ public class Amibe2UNV
 
 	public void write(PrintStream out) throws SAXException, IOException
 	{
-		AmibeReader.Dim3 ar = new AmibeReader.Dim3(directory);
+		AmibeReader.Dim3 ar = new AmibeReader.Dim3(directory.getPath());
 		SubMesh sm = ar.getSubmeshes().get(0);
 		unvWriter.writeInit(out);
 		writeNodes(out);
@@ -119,41 +112,6 @@ public class Amibe2UNV
 	}
 
 	/**
-	 * Match Amibe groups name to UNV group.
-	 * Return an array of groups so an amibe group can be in more than one
-	 * UNV group.
-	 */
-	protected String[] formatGroupName(String name)
-	{
-		return new String[]{name};
-	}
-
-	private Map<String, Collection<Group>> indexUNVGroups(Collection<Group> groups)
-	{
-		Map<String, Collection<Group>> toReturn = new HashMap<String, Collection<Group>>();
-		for(Group g:groups)
-		{
-			for(String unvG:formatGroupName(g.getName()))
-			{
-				Collection<Group> l = toReturn.get(unvG);
-				if(l == null)
-				{
-					l = new ArrayList<Group>();
-					toReturn.put(unvG, l);
-				}
-				l.add(g);
-			}
-		}
-		return toReturn;
-	}
-	private int getNumberOfItems(Collection<Group> l)
-	{
-		int r = 0;
-		for(Group g:l)
-			r += g.getNumberOfBeams()+g.getNumberOfNodes()+g.getNumberOfTrias();
-		return r;
-	}
-	/**
 	 * @param out
 	 * @param count id of the first beam
 	 * @throws IOException 
@@ -163,51 +121,31 @@ public class Amibe2UNV
 	{
 		out.println("    -1"+CR+"  2435");
 		int i = 0;
-		for(Entry<String, Collection<Group>> e:indexUNVGroups(subMesh.getGroups()).entrySet())
+		for(Group g:subMesh.getGroups())
 		{				
 			out.println(FORMAT_I10.format(i+1)+
 				"         0         0         0         0         0         0"+
-				FORMAT_I10.format(getNumberOfItems(e.getValue())));
+				FORMAT_I10.format(g.getNumberOfTrias()+g.getNumberOfBeams()));
 			
-			out.println(e.getKey());
+			out.println(g.getName());
 			int countg=0;
-			for(Group g:e.getValue())
-			{
-				for(int id:g.readTria3Ids())
-				{
-					out.print("         8"
-						+FORMAT_I10.format(id+1)
-						+"         0         0");
-					countg++;
-					if ((countg % 2) == 0)
-						out.println();
-				}
+			for(int id:g.readTria3Ids())
+			{				
+				out.print("         8"
+					+FORMAT_I10.format(id+1)
+					+"         0         0");
+				countg++;
+				if ((countg % 2) == 0)
+					out.println();
 			}
-
-			for(Group g:e.getValue())
+			for(int id:g.readBeamsIds())
 			{
-				for(int id:g.readBeamsIds())
-				{
-					out.print("         8"
-						+FORMAT_I10.format(id+count)
-						+"         0         0");
-					countg++;
-					if ((countg % 2) == 0)
-						out.println();
-				}
-			}
-
-			for(Group g:e.getValue())
-			{
-				for(int id:g.readNodesIds())
-				{
-					out.print("         7"
-						+FORMAT_I10.format(id+1)
-						+"         0         0");
-					countg++;
-					if ((countg % 2) == 0)
-						out.println();
-				}
+				out.print("         8"
+					+FORMAT_I10.format(id+count)
+					+"         0         0");
+				countg++;
+				if ((countg % 2) == 0)
+					out.println();
 			}
 			if ((countg % 2) !=0 )
 				out.println();
@@ -218,22 +156,27 @@ public class Amibe2UNV
 	
 	private void writeNodes(PrintStream out) throws IOException
 	{
-		DoubleFileReader f=unvWriter.getSubMesh().getNodes();
+		File f=unvWriter.getNodeFile();
+		// Open the file and then get a channel from the stream
+		FileInputStream fis = new FileInputStream(f);
+		FileChannel fc = fis.getChannel();
+	
+		ByteBuffer bb=ByteBuffer.allocate(3*8);
 		int count = 1;
 		out.println("    -1"+CR+"  2411");
-		double[] buffer = new double[3];
-		int nbNodes = (int) (f.size() / 3);
-		for(int i = 0; i < nbNodes; i++)
+		
+		while(fc.read(bb)!=-1)
 		{
-			f.get(buffer);
+			bb.rewind();
 			MeshExporter.UNV.writeSingleNode(out, count,
-				buffer[0]*scale, buffer[1]*scale, buffer[2]*scale);
+				bb.getDouble()*scale, bb.getDouble()*scale, bb.getDouble()*scale);
+			bb.rewind();
 			count ++;
 		}
-
+		
 		out.println("    -1");
 		
-		f.close();
+		fc.close();
 		logger.info("Total number of nodes: "+count);
 	}
 	

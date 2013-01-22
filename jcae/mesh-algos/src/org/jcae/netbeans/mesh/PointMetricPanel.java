@@ -45,9 +45,8 @@ public abstract class PointMetricPanel extends JPanel {
 		"X coordinate of the point",
 		"Y coordinate of the point",
 		"Z coordinate of the point",
-		"Mesh size at the give point",
-		"Mesh size far from the given point",
-		"Set how fast the mesh size inscrease"
+		"Distance at which to define the target size",
+		"Mesh target size at the given distance"
 	};
     /** Creates new form PointMetricPanel */
     public PointMetricPanel() {
@@ -78,12 +77,10 @@ public abstract class PointMetricPanel extends JPanel {
 
             },
             new String [] {
-                "x", "y", "z", "Size(d=0)", "Incr speed"
+                "x", "y", "z", "distance", "target"
             }
         ) {
-            Class[] types = new Class [] {
-                Double.class, Double.class, Double.class, Double.class, Double.class
-            };
+			Class[] types = new Class[]{Double.class, Double.class, Double.class, Double.class, Double.class};
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
@@ -126,7 +123,7 @@ public abstract class PointMetricPanel extends JPanel {
 
 	private void buttonAddActionPerformed(ActionEvent evt) {//GEN-FIRST:event_buttonAddActionPerformed
 		DefaultTableModel m = (DefaultTableModel) table.getModel();
-		m.addRow(new Object[]{0, 0, 0, getDefaultSize() / 10, 1});
+		m.addRow(new Object[]{0,0,0,10*getDefaultSize(), getDefaultSize()});
 	}//GEN-LAST:event_buttonAddActionPerformed
 
 	private void buttonRemoveActionPerformed(ActionEvent evt) {//GEN-FIRST:event_buttonRemoveActionPerformed
@@ -169,7 +166,6 @@ public abstract class PointMetricPanel extends JPanel {
 		int colCount = m.getColumnCount();
 		for(int i = 0; i<rowCount; i++)
 		{
-			out.print("1 ");
 			for(int j = 0; j<colCount; j++)
 			{
 				out.print(m.getValueAt(i, j));

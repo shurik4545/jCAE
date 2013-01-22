@@ -21,6 +21,7 @@
 %{ #include <ShapeFix_Wireframe.hxx> %}
 %{ #include <ShapeFix_Root.hxx> %}
 %{ #include <ShapeBuild_ReShape.hxx> %}
+%{ #include <ShapeFix_Face.hxx> %}
 
 class ShapeFix_Root 
 {
@@ -42,6 +43,40 @@ class ShapeFix_Root
         return dynamic_cast<ShapeBuild_ReShape *>(p);
     }
 }
+
+class ShapeFix_Face : public ShapeFix_Root {
+	public:
+	ShapeFix_Face();
+	ShapeFix_Face(const TopoDS_Face& face);
+	void ClearModes();
+	void Init(const TopoDS_Face& face);
+	void Init(const Handle_Geom_Surface& surf,const Standard_Real preci,const Standard_Boolean fwd = Standard_True);
+	void SetPrecision(const Standard_Real preci); 
+	void SetMinTolerance(const Standard_Real mintol);
+	void SetMaxTolerance(const Standard_Real maxtol);
+	Standard_Integer FixWireMode();
+	Standard_Integer FixOrientationMode();
+	Standard_Integer FixAddNaturalBoundMode();
+	Standard_Integer FixMissingSeamMode();
+	Standard_Integer FixSmallAreaWireMode();
+	Standard_Integer FixIntersectingWiresMode();
+	Standard_Integer FixLoopWiresMode();
+	Standard_Integer FixSplitFaceMode();
+	Standard_Integer AutoCorrectPrecisionMode();
+	TopoDS_Face Face() const;
+	TopoDS_Shape Result() const;
+	void Add(const TopoDS_Wire& wire);
+	Standard_Boolean Perform();
+	Standard_Boolean FixOrientation();
+	//Standard_Boolean FixOrientation(TopTools_DataMapOfShapeListOfShape& MapWires);
+	Standard_Boolean FixAddNaturalBound();
+	Standard_Boolean FixMissingSeam();
+	Standard_Boolean FixSmallAreaWire();
+	//Standard_Boolean FixLoopWire(TopTools_SequenceOfShape& aResWires);
+	Standard_Boolean FixIntersectingWires();
+	Standard_Boolean FixWiresTwoCoincEdges();
+	//Standard_Boolean FixSplitFace(const TopTools_DataMapOfShapeListOfShape& MapWires);
+};
 
 class ShapeFix_Wireframe: public ShapeFix_Root
 {

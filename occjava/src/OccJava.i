@@ -66,8 +66,10 @@
 %include "BRepAlgoAPI.i"
 %include "Poly.i"
 %include "Geom.i"
+%include "LocOpe.i"
 %include "BRepLib.i"
 %include "BRepFilletAPI.i"
+%include "BRepFeat.i"
 %include "BRepCheck.i"
 %include "ShapeBuild.i"
 %include "XSControl.i"
@@ -77,6 +79,8 @@
 %include "ShapeUpgrade.i"
 //Jens Schmidt, req. f. Thesis
 %include "GeomAPI.i"
+%include "GeomConvert.i"
+%include "GeomFill.i"
 %include "GC.i"
 
 
@@ -361,38 +365,31 @@ class BRepMesh_IncrementalMesh : public BRepMesh_DiscretRoot
 	Standard_Boolean IsModified() const;
 };
 
-%{#include <GeomAPI_ProjectPointOnSurf.hxx>%}
-
-%typemap(javacode) GeomAPI_ProjectPointOnSurf
-%{
-	public void lowerDistanceParameters(double[] uv)
-	{
-		double[] d2=new double[1];
-		lowerDistanceParameters(uv, d2);
-		uv[1]=d2[0];
-	}
-%}
-
-class GeomAPI_ProjectPointOnSurf
+/*%{#include <GeomAPI_ProjectPointOnSurf.hxx>%}
+class GeomAPI_ProjectPointOnSurf  
 {
-	%rename(init) Init;
-	%rename(nbPoints) NbPoints;
-	%rename(lowerDistanceParameters) LowerDistanceParameters;
-	%rename(lowerDistance) LowerDistance;
-	%rename(point) Point;
-	%rename(parameters) Parameters;
-	%rename(nearestPoint) NearestPoint;
 	public:
-	GeomAPI_ProjectPointOnSurf(const gp_Pnt& P,
-		const Handle_Geom_Surface & Surface);
-	void Init(const gp_Pnt& P,const Handle_Geom_Surface & surface);
-	Standard_Integer NbPoints() const;	
-	Quantity_Length LowerDistance() const;
-	const gp_Pnt & Point(const Standard_Integer Index) const;	
-	void LowerDistanceParameters(Quantity_Parameter& U,Quantity_Parameter& V) const;
-	void Parameters(const Standard_Integer Index,Quantity_Parameter& U,Quantity_Parameter& V) const;
+	GeomAPI_ProjectPointOnSurf();
+	GeomAPI_ProjectPointOnSurf(const gp_Pnt& P,const Handle_Geom_Surface& Surface);
+	GeomAPI_ProjectPointOnSurf(const gp_Pnt& P,const Handle_Geom_Surface& Surface,const Standard_Real Tolerance);
+	GeomAPI_ProjectPointOnSurf(const gp_Pnt& P,const Handle_Geom_Surface& Surface,const Quantity_Parameter Umin,const Quantity_Parameter Usup,const Quantity_Parameter Vmin,const Quantity_Parameter Vsup,const Standard_Real Tolerance);
+	GeomAPI_ProjectPointOnSurf(const gp_Pnt& P,const Handle_Geom_Surface& Surface,const Quantity_Parameter Umin,const Quantity_Parameter Usup,const Quantity_Parameter Vmin,const Quantity_Parameter Vsup);
+	void Init(const gp_Pnt& P,const Handle_Geom_Surface& Surface,const Standard_Real Tolerance);
+	void Init(const gp_Pnt& P,const Handle_Geom_Surface& Surface);
+	void Init(const gp_Pnt& P,const Handle_Geom_Surface& Surface,const Quantity_Parameter Umin,const Quantity_Parameter Usup,const Quantity_Parameter Vmin,const Quantity_Parameter Vsup,const Standard_Real Tolerance);
+	void Init(const gp_Pnt& P,const Handle_Geom_Surface& Surface,const Quantity_Parameter Umin,const Quantity_Parameter Usup,const Quantity_Parameter Vmin,const Quantity_Parameter Vsup);
+	void Init(const Handle_Geom_Surface& Surface,const Quantity_Parameter Umin,const Quantity_Parameter Usup,const Quantity_Parameter Vmin,const Quantity_Parameter Vsup,const Standard_Real Tolerance);
+	void Init(const Handle_Geom_Surface& Surface,const Quantity_Parameter Umin,const Quantity_Parameter Usup,const Quantity_Parameter Vmin,const Quantity_Parameter Vsup);
+	void Perform(const gp_Pnt& P);
+	Standard_Boolean IsDone() const;
+	Standard_Integer NbPoints() const;
+	gp_Pnt Point(const Standard_Integer Index) const;
+	void Parameters(const Standard_Integer Index,Quantity_Parameter U,Quantity_Parameter V) const;
+	Quantity_Length Distance(const Standard_Integer Index) const;
 	gp_Pnt NearestPoint() const;
-};
+	void LowerDistanceParameters(Quantity_Parameter U,Quantity_Parameter V) const;
+	Quantity_Length LowerDistance() const;
+};*/
 
 /**
  * BRepAlgo

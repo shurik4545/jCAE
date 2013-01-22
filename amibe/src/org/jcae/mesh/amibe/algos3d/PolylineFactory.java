@@ -269,7 +269,7 @@ public class PolylineFactory extends HashMap<Integer, Collection<List<Vertex>>>{
 
 			//The first iteration is for polyline ends detected by isPolylineEnd.
 			//Following iterations are for smooth polylines
-			do
+			while(!polylineEnds.isEmpty())
 			{
 				for(BeamVertex bv:polylineEnds)
 				{
@@ -292,7 +292,6 @@ public class PolylineFactory extends HashMap<Integer, Collection<List<Vertex>>>{
 				if(!beamSet.isEmpty())
 					polylineEnds.add(beamSet.iterator().next().v1);
 			}
-			while(!polylineEnds.isEmpty());
 		}
 	}
 }

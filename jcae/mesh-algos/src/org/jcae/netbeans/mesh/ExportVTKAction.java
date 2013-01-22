@@ -22,14 +22,13 @@ package org.jcae.netbeans.mesh;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
-import org.jcae.vtk.AmibePolyDataReader;
+import javax.xml.parsers.ParserConfigurationException;
+import org.jcae.mesh.xmldata.Amibe2VTK;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 import org.xml.sax.SAXException;
-import vtk.vtkXMLPolyDataWriter;
 
 public final class ExportVTKAction extends CookieAction
 {
@@ -40,32 +39,19 @@ public final class ExportVTKAction extends CookieAction
 		AmibeDataObject meshNode=activatedNodes[0].getLookup().lookup(AmibeDataObject.class);
 		File meshDir=new File(meshNode.getMeshDirectory());
 		jfc.setCurrentDirectory(meshDir.getParentFile());
-		jfc.setFileFilter(new FileFilter(){
-
-			@Override
-			public boolean accept(File file) {
-				return file.isDirectory() || file.getName().endsWith(".vtp");
-			}
-
-			@Override
-			public String getDescription() {
-				return "VTK PolyData (*.vtp)";
-			}
-		});
 		if(jfc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION)
 		{
 			String vtpFile=jfc.getSelectedFile().getPath();
 			if(!vtpFile.endsWith(".vtp"))
 				vtpFile+=".vtp";
+			Amibe2VTK amibeToVTK = new Amibe2VTK(meshDir);
 			try {
-				AmibePolyDataReader reader = new AmibePolyDataReader(meshDir.getPath());
-				vtkXMLPolyDataWriter writer = new vtkXMLPolyDataWriter();
-				writer.SetInput(reader.getPolyData());
-				writer.SetFileName(vtpFile);
-				writer.Write();
+				amibeToVTK.write(vtpFile);
 			} catch (IOException ex) {
 				Exceptions.printStackTrace(ex);
 			} catch (SAXException ex) {
+				Exceptions.printStackTrace(ex);
+			} catch (ParserConfigurationException ex) {
 				Exceptions.printStackTrace(ex);
 			}
 		}

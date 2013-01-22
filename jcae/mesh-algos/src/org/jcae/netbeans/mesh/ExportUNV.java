@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import javax.swing.JFileChooser;
 import org.jcae.mesh.xmldata.Amibe2UNV;
 import org.jcae.mesh.xmldata.MeshExporter;
+import org.jcae.netbeans.mesh.AmibeDataObject;
 import org.jcae.netbeans.mesh.ExportGroupAction.ChooseUnitPanel;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -14,7 +15,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
-public class ExportUNV extends CookieAction
+public final class ExportUNV extends CookieAction
 {
 	
 	protected void performAction(Node[] activatedNodes)
@@ -38,19 +39,12 @@ public class ExportUNV extends CookieAction
 
 				PrintStream stream=new PrintStream(new BufferedOutputStream(
 					new FileOutputStream(unvFile)));				
-				Amibe2UNV amibe2unv=new Amibe2UNV(meshDir)
-				{
-					@Override
-					protected String[] formatGroupName(String name) {
-						return ExportUNV.this.formatGroupName(name);
-					}
-				};
+				Amibe2UNV amibe2unv=new Amibe2UNV(meshDir);
 
 				if(unitPanel.isMeters())
 					amibe2unv.setUnit(MeshExporter.UNV.Unit.METER);
 				else
 					amibe2unv.setUnit(MeshExporter.UNV.Unit.MM);
-				amibe2unv.setScale(unitPanel.getScale());
 				amibe2unv.write(stream);				
 				stream.close();				
 			}
@@ -60,12 +54,7 @@ public class ExportUNV extends CookieAction
 			ErrorManager.getDefault().notify(ex);
 		}
 	}
-
-	protected String[] formatGroupName(String name)
-	{
-		return new String[]{name};
-	}
-
+	
 	protected int mode()
 	{
 		return CookieAction.MODE_EXACTLY_ONE;

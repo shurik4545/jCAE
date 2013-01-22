@@ -30,17 +30,11 @@ import org.openide.util.Lookup.Result;
 
 public class ViewShapeCookie implements ViewCookie
 {
-	private Node node;
+	private final Node node;
 	WeakReference<ViewableCAD> viewableRef = new WeakReference<ViewableCAD>(null);
 
-	public ViewShapeCookie() {
-	}
-
-	public ViewShapeCookie(Node node) {
-		this.node = node;
-	}
-
-	public void setNode(Node node) {
+	public ViewShapeCookie(Node node)
+	{
 		this.node = node;
 	}
 

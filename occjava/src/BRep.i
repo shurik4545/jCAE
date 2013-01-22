@@ -21,6 +21,7 @@
 %{
 #include <BRep_Tool.hxx>
 #include <Geom_Curve.hxx>
+#include <Geom_Surface.hxx>
 #include <BRep_Builder.hxx>
 #include <TopoDS_Builder.hxx>
 %}
@@ -38,6 +39,14 @@
 	{
 		double[] d2=new double[1];
 		Geom2d_Curve toReturn=curveOnSurface(e, f, range, d2);
+		range[1]=d2[0];
+		return toReturn;
+	}
+
+	public static Geom2d_Curve curveOnSurface(TopoDS_Edge e, Geom_Surface s, TopLoc_Location l, double[] range)
+	{
+		double[] d2=new double[1];
+		Geom2d_Curve toReturn=curveOnSurface(e, s, l, range, d2);
 		range[1]=d2[0];
 		return toReturn;
 	}
@@ -75,7 +84,10 @@ class BRep_Tool
 	static Standard_Real Tolerance(const TopoDS_Face& F) ;
 	static Standard_Real Tolerance(const TopoDS_Edge& E) ;
 	static Standard_Real Tolerance(const TopoDS_Vertex& V);
-	
+	static void UVPoints(const TopoDS_Edge& E,const Handle_Geom_Surface& S,const TopLoc_Location& L,gp_Pnt2d& PFirst,gp_Pnt2d& PLast);
+	static void UVPoints(const TopoDS_Edge& E,const TopoDS_Face& F,gp_Pnt2d& PFirst,gp_Pnt2d& PLast);
+	static void SetUVPoints(const TopoDS_Edge& E,const Handle_Geom_Surface& S,const TopLoc_Location& L,const gp_Pnt2d& PFirst,const gp_Pnt2d& PLast);
+	static void SetUVPoints(const TopoDS_Edge& E,const TopoDS_Face& F,const gp_Pnt2d& PFirst,const gp_Pnt2d& PLast);
 	/*static const Handle_Geom_Curve& Curve(const TopoDS_Edge& E,
 		Standard_Real& First,Standard_Real& Last) ;
 	static const Handle_Geom_Surface& Surface(const TopoDS_Face& F) ;
@@ -125,6 +137,16 @@ class BRep_Tool
 		const TopoDS_Face& F,Standard_Real& First,Standard_Real& Last)
 	{
 		Handle_Geom2d_Curve * hgc=new Handle_Geom2d_Curve(BRep_Tool::CurveOnSurface(E, F, First, Last));
+		if(hgc->IsNull())
+			return NULL;
+		else
+			return hgc;
+	}
+
+	static Handle_Geom2d_Curve * curveOnSurface(const TopoDS_Edge& E,
+		const Handle_Geom_Surface& S, const TopLoc_Location& L,Standard_Real& First,Standard_Real& Last)
+	{
+		Handle_Geom2d_Curve * hgc=new Handle_Geom2d_Curve(BRep_Tool::CurveOnSurface(E, S, L, First, Last));
 		if(hgc->IsNull())
 			return NULL;
 		else

@@ -168,8 +168,8 @@ public abstract class Shape<T extends Shape<T>> implements Comparable<T>
 	}
 	
 	protected TopoDS_Shape impl;
-	protected T[] children;
-	protected T[] parents;
+	private T[] children;
+	private T[] parents;
 
 	protected Shape()
 	{
@@ -283,12 +283,12 @@ public abstract class Shape<T extends Shape<T>> implements Comparable<T>
 		if(projectPointOnSurf == null)
 			projectPointOnSurf = new GeomAPI_ProjectPointOnSurf(coords, surface);
 		else
-			projectPointOnSurf.init(coords, surface);
-		if(projectPointOnSurf.nbPoints()>0)
+			projectPointOnSurf.Init(coords, surface);
+		if(projectPointOnSurf.NbPoints()>0)
 		{
-			projectPointOnSurf.lowerDistanceParameters(result);
-			double[] p = projectPointOnSurf.nearestPoint();
-			result[2] = projectPointOnSurf.lowerDistance();
+			projectPointOnSurf.LowerDistanceParameters(result[0],result[1]);
+			double[] p = projectPointOnSurf.NearestPoint();
+			result[2] = projectPointOnSurf.LowerDistance();
 			System.arraycopy(p, 0, result, 3, 3);
 		}
 		else
@@ -343,7 +343,7 @@ public abstract class Shape<T extends Shape<T>> implements Comparable<T>
 		writer.println("</geometry>");
 	}
 
-	protected void dump(PrintWriter writer, Set<T> shapeSet, int[] id)
+	private void dump(PrintWriter writer, Set<T> shapeSet, int[] id)
 	{
 		T shape = getDerived();
 		if (!shapeSet.contains(shape))
@@ -447,7 +447,7 @@ public abstract class Shape<T extends Shape<T>> implements Comparable<T>
 	 * @param maxsize the maximum number of returned shapes
 	 * @param shape exploration will end when this shape will be found
 	 */
-	protected T explore(Collection<T> result, TopAbs_ShapeEnum wantedType, int maxsize,
+	private T explore(Collection<T> result, TopAbs_ShapeEnum wantedType, int maxsize,
 		TopoDS_Shape shape)
 	{
 		if(impl.shapeType().equals(wantedType))

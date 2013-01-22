@@ -1,12 +1,11 @@
 
 # jCAE
 from org.jcae.mesh.amibe.ds import Mesh, AbstractHalfEdge
-from org.jcae.mesh.amibe.algos3d import Remesh, QEMDecimateHalfEdge, SwapEdge, RemeshPolyline
+from org.jcae.mesh.amibe.algos3d import Remesh, QEMDecimateHalfEdge, SwapEdge, PointMetric, RemeshPolyline
 from org.jcae.mesh.amibe.traits import MeshTraitsBuilder
 from org.jcae.mesh.amibe.projection import MeshLiaison
-from org.jcae.mesh.amibe.metrics import EuclidianMetric3D, DistanceMetric
+from org.jcae.mesh.amibe.metrics import EuclidianMetric3D
 from org.jcae.mesh.xmldata import MeshReader, MeshWriter
-from org.jcae.mesh.amibe.metrics.MetricSupport import AnalyticMetricInterface
 
 # Java
 from java.util import HashMap
@@ -46,8 +45,7 @@ parser.add_option("-m", "--metricsFile", metavar="STRING",
                   help="name of a file containing metrics map")
 parser.add_option("-P", "--point-metric", metavar="STRING",
                   action="store", type="string", dest="point_metric_file",
-                  help="""A CSV file containing points which to refine around. Each line must contains 6 values:
-                  - 1
+                  help="""A CSV file containing points which to refine around. Each line must contains 5 floating point values:
                   - x, y, z
                   - the distance of the source where the target size is defined
                   - the target size at the given distance""")
@@ -88,7 +86,7 @@ if options.recordFile:
 	mesh.getTrace().setDisabled(True)
 MeshReader.readObject3D(mesh, xmlDir)
 
-liaison = MeshLiaison.create(mesh, mtb)
+liaison = MeshLiaison(mesh, mtb)
 if options.recordFile:
 	liaison.getMesh().getTrace().setDisabled(False)
 	liaison.getMesh().getTrace().setLogFile(options.recordFile)
@@ -137,12 +135,12 @@ if options.decimateSize or options.decimateTarget:
 	SwapEdge(liaison, swapOptions).compute()
 
 algo = Remesh(liaison, opts)
-class RemeshMetric(AnalyticMetricInterface):
+class RemeshMetric(Remesh.AnalyticMetricInterface):
 	def getTargetSize(self, x, y, z):
 		return min(200.0, (x - 9000.0)*(x - 9000.0) / 2250.0)
 
 if options.point_metric_file:
-    algo.setAnalyticMetric(DistanceMetric(options.size, options.point_metric_file))
+    algo.setAnalyticMetric(PointMetric(options.size, options.point_metric_file))
 elif setAnalytic:
 	algo.setAnalyticMetric(RemeshMetric());
 
@@ -190,7 +188,7 @@ for bId in bgroupMap.keySet():
 	for numPoly in xrange(nrPoly):
 		polyline = listOfPolylines.get(numPoly)
 		if options.point_metric_file:
-			met = DistanceMetric(options.size, options.point_metric_file)
+			met = PointMetric(options.size, options.point_metric_file)
 		elif setAnalytic:
 			met = RemeshMetric()
 		else:

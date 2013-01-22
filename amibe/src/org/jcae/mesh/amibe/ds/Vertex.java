@@ -26,8 +26,6 @@ import org.jcae.mesh.amibe.metrics.Matrix3D;
 import org.jcae.mesh.amibe.metrics.Location;
 import java.util.Iterator;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.TreeSet;
 
 /**
  * Vertex of a mesh.
@@ -526,6 +524,7 @@ public class Vertex implements Location, Serializable
 		if (link instanceof Triangle)
 			return new NeighbourIteratorAbstractHalfEdge((Triangle) link);
 		// Non-manifold vertex
+		logger.fine("Non-manifold vertex: "+this);
 		Triangle [] t = (Triangle []) link;
 		Iterator<AbstractHalfEdge> [] iterators = new NeighbourIteratorAbstractHalfEdge[t.length];
 		for (int i = 0; i < t.length; i++)
@@ -547,13 +546,6 @@ public class Vertex implements Location, Serializable
 	public final void setMutable(boolean m)
 	{
 		mutable = m;
-	}
-
-	/** Fast setMutable for jython */
-	public static void setMutable(Iterable<Vertex> vertices, boolean m)
-	{
-		for(Vertex v:vertices)
-			v.mutable = m;
 	}
 
 	/**
@@ -869,15 +861,5 @@ public class Vertex implements Location, Serializable
 			r.append(" !M");
 		return r.toString();
 	}
-
-	/**
-	 * Fill the groups collection with the list of groups adjacent to this
-	 * vertex
-	 */
-	public void getGroups(Collection<Integer> groups)
-	{
-		Iterator<Triangle> it = getNeighbourIteratorTriangle();
-		while(it.hasNext())
-			groups.add(it.next().getGroupId());
-	}
+	
 }

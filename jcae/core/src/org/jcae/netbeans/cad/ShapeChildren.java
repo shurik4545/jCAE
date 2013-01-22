@@ -22,7 +22,6 @@ package org.jcae.netbeans.cad;
 
 import java.util.Collection;
 import java.util.TreeSet;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -49,18 +48,12 @@ public class ShapeChildren extends Children.Array implements Node.Cookie
 			return shape.compareTo(o.shape);
 		}
 		
-		public Node getNode(FileObject fileObject)
+		public Node getNode()
 		{
 			if(node == null)
-				node = ShapeNode.create(shape, fileObject);
+				node = new ShapeNode(shape);
 			return node;
 		}
-	}
-
-	private final FileObject fileObject;
-	public ShapeChildren(FileObject fileObject)
-	{
-		this.fileObject = fileObject;
 	}
 	
 	public void addShapes(Collection<NbShape> shapes)
@@ -74,7 +67,7 @@ public class ShapeChildren extends Children.Array implements Node.Cookie
 				
 		nodes.clear();
 		for(SortedNode s:set)
-			nodes.add(s.getNode(fileObject));
+			nodes.add(s.getNode());
 		
 		refresh();
 	}	

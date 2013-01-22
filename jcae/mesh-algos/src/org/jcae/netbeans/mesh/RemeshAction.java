@@ -29,8 +29,7 @@ import java.util.List;
  * @author Jerome Robert
  */
 public class RemeshAction extends AlgoAction {
-	protected final static String AFRONT =
-		System.getProperty("org.jcae.mesh.afront.path", null);
+
 	@Override
 	public String getName() {
 		return "Remesh";
@@ -51,15 +50,8 @@ public class RemeshAction extends AlgoAction {
 			ArrayList<String> l = new ArrayList<String>();
 			l.add("--size");
 			l.add(Double.toString(p.getTargetSize()));
-			l.add("--coplanarity");
-			l.add(Double.toString(p.getCoplanarity()));
 			if(p.isPreserveGroups())
 				l.add("--preserveGroups");
-			if(AFRONT != null)
-			{
-				l.add("--afront");
-				l.add(AFRONT);
-			}
 			l.add(meshDirectory);
 			l.add(meshDirectory);
 			return l;

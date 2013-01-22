@@ -45,23 +45,17 @@ import vtk.vtkActor;
 import vtk.vtkAssembly;
 import vtk.vtkCanvas;
 import vtk.vtkCellArray;
-import vtk.vtkCoincidentTopologyResolutionPainter;
 import vtk.vtkConeSource;
 import vtk.vtkDataArray;
 import vtk.vtkDoubleArray;
 import vtk.vtkFileOutputWindow;
 import vtk.vtkFloatArray;
+import vtk.vtkGlobalJavaHash;
 import vtk.vtkIdTypeArray;
-import vtk.vtkInformation;
-import vtk.vtkInformationDoubleVectorKey;
-import vtk.vtkInformationIntegerKey;
 import vtk.vtkIntArray;
-import vtk.vtkNativeLibrary;
 import vtk.vtkObjectBase;
 import vtk.vtkOutputWindow;
 import vtk.vtkPNGWriter;
-import vtk.vtkPainter;
-import vtk.vtkPainterPolyDataMapper;
 import vtk.vtkPlane;
 import vtk.vtkPlaneCollection;
 import vtk.vtkPoints;
@@ -187,10 +181,12 @@ public class Utils
 	
 	public static void loadVTKLibraries()
 	{
-		vtkNativeLibrary.LoadNativeLibraries(vtkNativeLibrary.COMMON,
-			vtkNativeLibrary.FILTERING, vtkNativeLibrary.IO,
-			vtkNativeLibrary.IMAGING, vtkNativeLibrary.GRAPHICS,
-			vtkNativeLibrary.RENDERING);
+		System.loadLibrary("vtkCommonJava");
+		System.loadLibrary("vtkFilteringJava");
+		System.loadLibrary("vtkIOJava");
+		System.loadLibrary("vtkImagingJava");
+		System.loadLibrary("vtkGraphicsJava");
+		System.loadLibrary("vtkRenderingJava");
 	}
 
 	public static void main(final String[] args)
@@ -606,60 +602,6 @@ public class Utils
 			runnable.run();
 	}
 	
-	//this 2 fields should be final. They can't be because vtk library may not
-	//have been loaded before this class
-	private static vtkInformationIntegerKey RESOLVE_COINCIDENT_TOPOLOGY;
-	private static vtkInformationDoubleVectorKey POLYGON_OFFSET_PARAMETERS;
-
-	private static  class PolygonOffsetHandler
-	{
-		private vtkPainter painter;
-		private double factor, value;
-		public PolygonOffsetHandler(vtkPainter painter, double factor, double value) {
-			this.painter = painter;
-			this.factor = factor;
-			this.value = value;
-		}
-
-		public void event()
-		{
-			if(RESOLVE_COINCIDENT_TOPOLOGY == null)
-			{
-				vtkCoincidentTopologyResolutionPainter dummy =
-					new vtkCoincidentTopologyResolutionPainter();
-				RESOLVE_COINCIDENT_TOPOLOGY = dummy.RESOLVE_COINCIDENT_TOPOLOGY();
-				POLYGON_OFFSET_PARAMETERS = dummy.POLYGON_OFFSET_PARAMETERS();
-			}
-			vtkInformation info = painter.GetInformation();
-			//If you want to know who call the event uncomment this line
-			//System.out.println(new Throwable().getStackTrace()[2]+ " " + (info == null));
-
-			//info is null when this is called by vtkVisibleCellSelector.Select
-			if(info != null)
-			{
-				// change info may trigger rebuild events in VTK so we check if
-				// it's really necessary
-				if(info.Get(RESOLVE_COINCIDENT_TOPOLOGY) != 1)
-					info.Set(RESOLVE_COINCIDENT_TOPOLOGY, 1);
-				if(info.Get(POLYGON_OFFSET_PARAMETERS, 0) != factor ||
-					info.Get(POLYGON_OFFSET_PARAMETERS, 1) != value)
-					info.Set(POLYGON_OFFSET_PARAMETERS, factor, value, 0);
-			}
-		}
-	}
-	/**
-	 * Set the polygon offset of a mapper.
-	 * Warning this method has a side effect. After calling it changes made on
-	 * the mapper may not be propagated to delegate painters
-	 */
-	public static void setPolygonOffset(vtkPainterPolyDataMapper pm,
-		double factor, double value)
-	{
-		vtkPainter painter = pm.GetPainter();
-		pm.AddObserver("StartEvent",
-			new PolygonOffsetHandler(painter, factor, value), "event");
-	}
-
 	/** Create a dummy cone actor
 	 * @return 
 	 */
@@ -922,9 +864,6 @@ public class Utils
 
 	public static int[] getValues(vtkCellArray array)
 	{
-		//The underlying vtkIdTypeArray may be longer the expected and
-		//getValues(vtkIdTypeArray) won't know it, so we squeeze it before.
-		array.Squeeze();
 		vtkIdTypeArray data = array.GetData();
 		int[] toReturn = getValues(data);
 		return toReturn;
@@ -985,6 +924,8 @@ public class Utils
 	 */
 	public static void delete(vtkObjectBase o)
 	{
-		VTKMemoryManager.delete(o);
+		WeakReference ref = (WeakReference)
+			vtkGlobalJavaHash.PointerToReference.get(o.GetVTKId());
+		ref.clear();
 	}
 }

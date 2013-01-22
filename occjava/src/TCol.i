@@ -119,7 +119,6 @@ class Handle_TColgp_HArray1OfPnt
 	
 }
 
-
 /**
  * TColgp_Array1OfVec
  */
@@ -163,11 +162,11 @@ class Handle_TColgp_HArray1OfPnt
  * TColgp_Array1OfPnt
  */
 %{#include <TColgp_Array1OfPnt.hxx>%}
-%typemap(jni) TColgp_Array1OfPnt, const TColgp_Array1OfPnt&   "jdoubleArray"
-%typemap(jtype) TColgp_Array1OfPnt, const TColgp_Array1OfPnt& "double[]"
-%typemap(jstype) TColgp_Array1OfPnt, const TColgp_Array1OfPnt& "double[]"
-%typemap(javain)TColgp_Array1OfPnt, const TColgp_Array1OfPnt& "$javainput"
-%typemap(javaout)TColgp_Array1OfPnt, const TColgp_Array1OfPnt&
+%typemap(jni) TColgp_Array1OfPnt, const TColgp_Array1OfPnt&, TColgp_Array1OfPnt&   "jdoubleArray"
+%typemap(jtype) TColgp_Array1OfPnt, const TColgp_Array1OfPnt&, TColgp_Array1OfPnt& "double[]"
+%typemap(jstype) TColgp_Array1OfPnt, const TColgp_Array1OfPnt&, TColgp_Array1OfPnt& "double[]"
+%typemap(javain)TColgp_Array1OfPnt, const TColgp_Array1OfPnt&, TColgp_Array1OfPnt& "$javainput"
+%typemap(javaout)TColgp_Array1OfPnt, const TColgp_Array1OfPnt&, TColgp_Array1OfPnt&
 {
 	return $jnicall;
 }
@@ -218,10 +217,30 @@ class Handle_TColgp_HArray1OfPnt
 	
 }
 
-%typemap(freearg) TColgp_Array1OfPnt, const TColgp_Array1OfPnt& 
+%typemap(freearg) TColgp_Array1OfPnt, const TColgp_Array1OfPnt&, TColgp_Array1OfPnt& 
 {
 	delete $1;
 }
+
+%{#include <TColgp_Array2OfPnt.hxx>%}
+
+class TColgp_Array2OfPnt
+{
+	public:
+	TColgp_Array2OfPnt(const Standard_Integer R1,const Standard_Integer R2,const Standard_Integer C1,const Standard_Integer C2);
+	TColgp_Array2OfPnt(const gp_Pnt& Item,const Standard_Integer R1,const Standard_Integer R2,const Standard_Integer C1,const Standard_Integer C2);
+	void Init(const gp_Pnt& V);
+	void Destroy();
+	Standard_Integer ColLength() const;
+	Standard_Integer RowLength() const;
+	Standard_Integer LowerCol() const;
+	Standard_Integer LowerRow() const;
+	Standard_Integer UpperCol() const;
+	Standard_Integer UpperRow() const;
+	void SetValue(const Standard_Integer Row,const Standard_Integer Col,const gp_Pnt& Value);
+	const gp_Pnt& Value(const Standard_Integer Row,const Standard_Integer Col) const;
+	gp_Pnt& ChangeValue(const Standard_Integer Row,const Standard_Integer Col);
+};
 
 /**
  * TColgp_Array1OfPnt2d
@@ -252,40 +271,88 @@ class Handle_TColgp_HArray1OfPnt
     $result=jarray;
 }
 
+%{#include <TColStd_Array1OfInteger.hxx>%}
+%typemap(jni) TColStd_Array1OfInteger, const TColStd_Array1OfInteger&, TColStd_Array1OfInteger&  "jintArray"
+%typemap(jtype) TColStd_Array1OfInteger, const TColStd_Array1OfInteger&, TColStd_Array1OfInteger& "int[]"
+%typemap(jstype) TColStd_Array1OfInteger, const TColStd_Array1OfInteger&, TColStd_Array1OfInteger& "int[]"
+%typemap(javain) TColStd_Array1OfInteger, const TColStd_Array1OfInteger&, TColStd_Array1OfInteger& "$javainput"
+%typemap(javaout) TColStd_Array1OfInteger, const TColStd_Array1OfInteger&, TColStd_Array1OfInteger&
+{
+	return $jnicall;
+}
+
+%typemap(out) TColStd_Array1OfInteger, const TColStd_Array1OfInteger&, TColStd_Array1OfInteger&
+{
+    
+    const TColStd_Array1OfInteger &Integers = *$1;
+    int i,j,s;
+    s=Integers.Length();
+    jint* ns=(jint*)malloc(sizeof(jint)*s);
+    for(j=0,i=Integers.Lower();i<=Integers.Upper();j+=1,i++)
+    {
+		ns[j]=Integers(i);
+    }
+    jintArray jarray=JCALL1(NewIntArray, jenv, s);
+    JCALL4(SetIntArrayRegion, jenv, jarray, 0, s, ns);
+    free(ns);
+    $result=jarray;
+}
+
+%typemap(in) TColStd_Array1OfInteger, const TColStd_Array1OfInteger&, TColStd_Array1OfInteger&
+{
+	int i,j;
+	if (!$input)
+	{
+		SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null array");
+		return $null;
+	}
+	jsize sz = JCALL1(GetArrayLength, jenv, $input);
+	jint* jarr = JCALL2(GetIntArrayElements, jenv, $input, NULL);
+
+	$1 = new TColStd_Array1OfInteger(1,sz);
+	for (i=1,j=0; i<=sz; i++,j++) {
+	  $1->SetValue(i,Standard_Integer(jarr[j]));
+	}
+	
+}
+
+%typemap(freearg) TColStd_Array1OfInteger, const TColStd_Array1OfInteger&, TColStd_Array1OfInteger&
+{
+	delete $1;
+}
+
 
 /**
  * TColStd_Array1OfReal
  */
 %{#include <TColStd_Array1OfReal.hxx>%}
-%typemap(jni) TColStd_Array1OfReal, const TColStd_Array1OfReal&  "jdoubleArray"
-%typemap(jtype) TColStd_Array1OfReal, const TColStd_Array1OfReal& "double[]"
-%typemap(jstype) TColStd_Array1OfReal, const TColStd_Array1OfReal& "double[]"
-%typemap(javain) TColStd_Array1OfReal, const TColStd_Array1OfReal& "$javainput"
-%typemap(javaout) TColStd_Array1OfReal, const TColStd_Array1OfReal&
+%typemap(jni) TColStd_Array1OfReal, const TColStd_Array1OfReal&, TColStd_Array1OfReal&  "jdoubleArray"
+%typemap(jtype) TColStd_Array1OfReal, const TColStd_Array1OfReal&, TColStd_Array1OfReal& "double[]"
+%typemap(jstype) TColStd_Array1OfReal, const TColStd_Array1OfReal&, TColStd_Array1OfReal& "double[]"
+%typemap(javain) TColStd_Array1OfReal, const TColStd_Array1OfReal&, TColStd_Array1OfReal& "$javainput"
+%typemap(javaout) TColStd_Array1OfReal, const TColStd_Array1OfReal&, TColStd_Array1OfReal&
 {
 	return $jnicall;
 }
 
-%typemap(out) TColStd_Array1OfReal, const TColStd_Array1OfReal&
+%typemap(out) TColStd_Array1OfReal, const TColStd_Array1OfReal&, TColStd_Array1OfReal&
 {
-    /*
+   
 	const TColgp_Array1OfReal &Reals = *$1;
     int i,j,s;
-    s=Reals.Length()*2;
+    s=Reals.Length();
     jdouble * ns=(jdouble *)malloc(sizeof(jdouble)*s);
-    for(j=0,i=Reals.Lower();i<=reals.Upper();j+=2,i++)
+    for(j=0,i=Reals.Lower();i<=Reals.Upper();j+=1,i++)
     {
-        //TODO
-		ns[j]=Reals(i).X();
-        ns[j+1]=Reals(i).Y();
+		ns[j]=Reals(i);
     }
     jdoubleArray jarray=JCALL1(NewDoubleArray, jenv, s);
 	JCALL4(SetDoubleArrayRegion, jenv, jarray, 0, s, ns);
     free(ns);
-    $result=jarray;*/
+    $result=jarray;
 }
 
-%typemap(in) TColStd_Array1OfReal, const TColStd_Array1OfReal&
+%typemap(in) TColStd_Array1OfReal, const TColStd_Array1OfReal&, TColStd_Array1OfReal&
 {
 	int i,j;
 	if (!$input)
@@ -303,7 +370,27 @@ class Handle_TColgp_HArray1OfPnt
 	
 }
 
-%typemap(freearg) TColStd_Array1OfReal, const TColStd_Array1OfReal&
+%typemap(freearg) TColStd_Array1OfReal, const TColStd_Array1OfReal&, TColStd_Array1OfReal&
 {
 	delete $1;
 }
+
+%{#include <TColStd_Array2OfReal.hxx>%}
+
+class TColStd_Array2OfReal
+{
+	public:
+	TColStd_Array2OfReal(const Standard_Integer R1,const Standard_Integer R2,const Standard_Integer C1,const Standard_Integer C2);
+	TColStd_Array2OfReal(const Standard_Real Item,const Standard_Integer R1,const Standard_Integer R2,const Standard_Integer C1,const Standard_Integer C2);
+	void Init(const Standard_Real V);
+	void Destroy();
+	Standard_Integer ColLength() const;
+	Standard_Integer RowLength() const;
+	Standard_Integer LowerCol() const;
+	Standard_Integer LowerRow() const;
+	Standard_Integer UpperCol() const;
+	Standard_Integer UpperRow() const;
+	void SetValue(const Standard_Integer Row,const Standard_Integer Col,const Standard_Real Value);
+	const Standard_Real Value(const Standard_Integer Row,const Standard_Integer Col) const;
+	Standard_Real ChangeValue(const Standard_Integer Row,const Standard_Integer Col);
+};

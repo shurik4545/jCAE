@@ -156,8 +156,7 @@ public class IntFileReaderByDirectBuffer implements IntFileReader
 		{
 			moveBufferTo(index * ELEMENT_SIZE);
 			if (remaining < 0)
-				throw new IndexOutOfBoundsException(
-					"requested element "+index+" in an array of size "+numberOfElements);
+				throw new IndexOutOfBoundsException();
 			relIndex = index - startBufferIndex;
 		}
 		// Change buffer position and discard array

@@ -133,11 +133,6 @@ public abstract class XMLReader {
 
 	protected abstract void read(Document dom) throws SAXException, XPathExpressionException, IOException;
 
-	public void read(String path) throws SAXException, IOException
-	{
-		read(new File(path));
-	}
-
 	public void read(File in) throws SAXException, IOException
 	{
 		Document dom = createDocument(in);

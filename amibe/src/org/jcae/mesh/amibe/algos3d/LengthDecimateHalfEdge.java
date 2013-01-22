@@ -31,14 +31,11 @@ import org.jcae.mesh.xmldata.MeshReader;
 import org.jcae.mesh.xmldata.MeshWriter;
 import java.io.IOException;
 import java.io.File;
-import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jcae.mesh.amibe.metrics.MetricSupport;
 
 public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 {
@@ -46,8 +43,7 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 	private Vertex v3;
 	private boolean freeEdgesOnly = false;
 	private final double freeEdgeFactor;
-	private double maxEdgeLength = -1;
-	private final MetricSupport metrics;
+
 	/**
 	 * Creates a <code>LengthDecimateHalfEdge</code> instance.
 	 *
@@ -72,13 +68,17 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 		v3 = null;
 		m.createVertex(0.0, 0.0, 0.0);
 		double freeEdgeTol = Double.NaN;
-		tolerance = 1;
-		metrics = new MetricSupport(mesh, options, "size");
 		for (final Map.Entry<String, String> opt: options.entrySet())
 		{
 			String key = opt.getKey();
 			String val = opt.getValue();
-			if ("maxtriangles".equals(key))
+			if ("size".equals(key))
+			{
+				tolerance = Double.parseDouble(val);
+				LOGGER.fine("Tolerance: "+tolerance);
+				tolerance = tolerance*tolerance;
+			}
+			else if ("maxtriangles".equals(key))
 			{
 				nrFinal = Integer.parseInt(val);
 				LOGGER.fine("Nr max triangles: "+nrFinal);
@@ -87,6 +87,7 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 			{
 				maxEdgeLength = Double.parseDouble(val);
 				LOGGER.fine("Max edge length: "+maxEdgeLength);
+				maxEdgeLength = maxEdgeLength*maxEdgeLength;
 			}
 			else if ("freeEdgesOnly".equals(key))
 			{
@@ -103,8 +104,8 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 				minCos = Double.parseDouble(val);
 				LOGGER.fine("Minimum dot product of face normals allowed for swapping an edge: "+minCos);
 			}
-			else if(!metrics.isKnownOption(key))
-				throw new RuntimeException("Unknown option: "+key);
+			else
+				throw new IllegalArgumentException("Unknown option: "+key);
 		}
 		if(Double.isNaN(freeEdgeTol))
 			freeEdgeFactor = 1.0;
@@ -116,16 +117,6 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 			setNoSwapAfterProcessing(true);
 	}
 	
-	public void setAnalyticMetric(MetricSupport.AnalyticMetricInterface m)
-	{
-		metrics.setAnalyticMetric(m);
-	}
-
-	public void setAnalyticMetric(int groupId, MetricSupport.AnalyticMetricInterface m)
-	{
-		metrics.setAnalyticMetric(groupId, m);
-	}
-
 	@Override
 	public Logger thisLogger()
 	{
@@ -135,7 +126,6 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 	@Override
 	protected void preProcessAllHalfEdges()
 	{
-		metrics.compute();
 	}
 
 	@Override
@@ -145,7 +135,7 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 		if (freeEdgesOnly && !e.hasAttributes(AbstractHalfEdge.IMMUTABLE | AbstractHalfEdge.BOUNDARY | AbstractHalfEdge.NONMANIFOLD))
 			return 4.0 * tolerance;
 		
-		double toReturn = metrics.interpolatedDistance(e.origin(), e.destination());
+		double toReturn = e.origin().sqrDistance3D(e.destination());
 		
 		//Handle the case of specific tolerance for free edges
 		if(freeEdgeFactor != 1.0 &&
@@ -171,76 +161,25 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 			return false;
 		if (!v1.isMutable() && !v2.isMutable())
 			return false;
-		v3 = optimalPlacementGroups(v1, v2);
-		if(v3 == null)
-			return false;
+		v3 = optimalPlacement(v1, v2);
 		if (!mesh.canCollapseEdge(current, v3))
 			return false;
 		if (maxEdgeLength > 0.0)
 		{
-			metrics.put(v3);
 			for (Iterator<Vertex> itnv = v1.getNeighbourIteratorVertex(); itnv.hasNext(); )
 			{
 				Vertex n = itnv.next();
-				if (n != mesh.outerVertex && (!freeEdgesOnly || n.isManifold()))
-					if(metrics.interpolatedDistance(n, v3) > maxEdgeLength)
-						return false;
+				if (n != mesh.outerVertex && v3.sqrDistance3D(n) > maxEdgeLength)
+					return false;
 			}
 			for (Iterator<Vertex> itnv = v2.getNeighbourIteratorVertex(); itnv.hasNext(); )
 			{
 				Vertex n = itnv.next();
-				if (n != mesh.outerVertex && (!freeEdgesOnly || n.isManifold()))
-					if(metrics.interpolatedDistance(n, v3) > maxEdgeLength)
-						return false;
+				if (n != mesh.outerVertex && v3.sqrDistance3D(n) > maxEdgeLength)
+					return false;
 			}
 		}
 		return true;
-	}
-
-	private Collection<Integer> getGroups(Vertex v)
-	{
-		Iterator<Triangle> it = v.getNeighbourIteratorTriangle();
-		TreeSet<Integer> r = new TreeSet<Integer>();
-		while(it.hasNext())
-			r.add(it.next().getGroupId());
-		return r;
-	}
-
-	/**
-	 * Compute the optimal point if we are on differents borders of groups.
-	 * Delegate to optimalPlacement in other cases.
-	 */
-	private Vertex optimalPlacementGroups(Vertex v1, Vertex v2)
-	{
-		TreeSet<Integer> grps1 = new TreeSet<Integer>();
-		TreeSet<Integer> grps2 = new TreeSet<Integer>();
-		Vertex toReturn;
-		if(v1.isManifold() && v2.isManifold())
-			toReturn = optimalPlacement(v1, v2);
-		else
-		{
-			grps1.clear();
-			grps2.clear();
-			v1.getGroups(grps1);
-			v2.getGroups(grps2);
-			if(grps1.containsAll(grps2))
-			{
-				if(grps1.size() == grps2.size())
-				{
-					//both points are on the same group border so we delegate to
-					//optimalPlacement as if it was manifold
-					toReturn = optimalPlacement(v1, v2);
-				}
-				else
-					toReturn = v1;
-			}
-			else if(grps2.containsAll(grps1))
-				toReturn = v2;
-			else
-				//group set are disjoin so collapse is forbidden
-				toReturn = null;
-		}
-		return toReturn;
 	}
 
 	private Vertex optimalPlacement(Vertex v1, Vertex v2)
@@ -249,12 +188,7 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 			return v1;
 		else if (v2.getRef() != 0 || !v2.isMutable())
 			return v2;
-		double[] uv1 = v1.getUV();
-		double[] uv2 = v2.getUV();
-		return mesh.createVertex(
-			(uv1[0] + uv2[0]) / 2.0,
-			(uv1[1] + uv2[1]) / 2.0,
-			(uv1[2] + uv2[2]) / 2.0);
+		return v1;
 	}
 
 	@Override
@@ -319,7 +253,6 @@ public class LengthDecimateHalfEdge extends AbstractAlgoHalfEdge
 			liaison.removeVertex(v2);
 			liaison.addVertex(v3, bgT);
 		}
-		metrics.put(v3);
 		// Update edge costs
 		assert current != null : v3+" not connected to "+apex;
 		assert current.origin() == v3 : ""+current+"\n"+v3+"\n"+apex;

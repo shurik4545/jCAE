@@ -45,7 +45,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -152,8 +151,6 @@ public class Mesh implements Serializable
 	private List<Vertex> beams = new ArrayList<Vertex>();
 	private TIntArrayList beamGroups = new TIntArrayList();
 	private Map<Integer, String> groupNames = new HashMap<Integer, String>();
-	private Map<String, Collection<Vertex>> vertexGroups =
-		new HashMap<String, Collection<Vertex>>();
 
 	// Utility class to improve debugging output
 	private static class OuterVertex extends Vertex
@@ -212,12 +209,7 @@ public class Mesh implements Serializable
 		for (int i = 0; i < tempHE.length; i++)
 			tempHE[i] = new HalfEdge(traitsBuilder.getHalfEdgeTraitsBuilder(), (TriangleHE) null, (byte) 0, (byte) 0);
 	}
-
-	public MeshTraitsBuilder getBuilder()
-	{
-		return traitsBuilder;
-	}
-
+	
 	public final MeshParameters getMeshParameters()
 	{
 		return meshParameters;
@@ -458,11 +450,6 @@ public class Mesh implements Serializable
 		return Collections.unmodifiableList(beams);
 	}
 
-	public void setBeam(int i, Vertex v)
-	{
-		beams.set(i, v);
-	}
-
 	public int getBeamGroup(int i)
 	{
 		return beamGroups.get(i);
@@ -489,7 +476,7 @@ public class Mesh implements Serializable
 		return groupNames.get(id);
 	}
 
-	public int[] getGroupIDs(String ... names)
+	public int[] getGroupIDs(String[] names)
 	{
 		Map<String, Integer> invertMap = new HashMap<String, Integer>();
 		for(Entry<Integer, String> e:groupNames.entrySet())
@@ -499,22 +486,6 @@ public class Mesh implements Serializable
 		for(String name:names)
 			groupIds[i++] = invertMap.get(name);
 		return groupIds;
-	}
-
-	public void setVertexGroup(Vertex v, String group)
-	{
-		Collection<Vertex> l = vertexGroups.get(group);
-		if(l == null)
-		{
-			l = new ArrayList<Vertex>();
-			vertexGroups.put(group, l);
-		}
-		l.add(v);
-	}
-
-	public Map<String, Collection<Vertex>> getVertexGroup()
-	{
-		return Collections.unmodifiableMap(vertexGroups);
 	}
 
 	public int getNumberOfGroups()
@@ -636,7 +607,7 @@ public class Mesh implements Serializable
 		}
 
 		int nrJunctionPoints = 0;
-		Collection<Vertex> freeVertices = new HashSet<Vertex>();
+		ArrayList<Vertex> freeVertices = new ArrayList<Vertex>();
 		for (Vertex v: tVertList.keySet())
 		{
 			if (bndNodes.contains(v))
@@ -653,7 +624,6 @@ public class Mesh implements Serializable
 			else if(v.getLink() == null)
 				freeVertices.add(v);
 		}
-		freeVertices.removeAll(beams);
 		if (nrJunctionPoints > 0)
 			logger.info("Found "+nrJunctionPoints+" junction points");
 		if (!freeVertices.isEmpty())
@@ -1089,7 +1059,7 @@ public class Mesh implements Serializable
 					continue;
 				sym = ot.sym(sym);
 				int symGroupId = sym.getTri().getGroupId();
-				if (groupId != symGroupId && (groupSet.isEmpty() || groupSet.contains(groupId)))
+				if (groupId != symGroupId && (groupSet.isEmpty() || groupSet.contains(symGroupId)))
 					bindSymEdgesToVirtualTriangles(ot, sym, temp0, temp1, newTriangles);
 			}
 		}
@@ -1231,55 +1201,6 @@ public class Mesh implements Serializable
 		v.setRef(-maxLabel);
 	}
 
-	/** Tag Vertices and HalfEdges which are in a give list of groups */
-	public final void tagGroups(Collection<String> names, int attr)
-	{
-		boolean fixVertex  = (attr & AbstractHalfEdge.IMMUTABLE) != 0;
-		if(fixVertex)
-		{
-			//node groups
-			for(String gn:names)
-			{
-				Collection<Vertex> l = vertexGroups.get(gn);
-				if(l != null)
-					for(Vertex v:l)
-						v.setMutable(false);
-			}
-		}
-
-		//triangle groups
-		if (hasAdjacency() && !triangleList.isEmpty())
-		{
-			names = new HashSet<String>(names);
-			TIntHashSet groupIds = new TIntHashSet(names.size());
-			for(Entry<Integer, String> e:groupNames.entrySet())
-			{
-				if(names.contains(e.getValue()))
-					groupIds.add(e.getKey());
-			}
-			AbstractHalfEdge ot  = null;
-			AbstractHalfEdge sym = triangleList.iterator().next().getAbstractHalfEdge();
-
-			for (Triangle t: triangleList)
-			{
-				ot = t.getAbstractHalfEdge(ot);
-				if (t.hasAttributes(AbstractHalfEdge.OUTER))
-					continue;
-				if(groupIds.contains(t.getGroupId()))
-					for (int i = 0; i < 3; i++)
-					{
-						ot = ot.next();
-						sym = ot.sym(sym);
-						ot.setAttributes(attr);
-						if (fixVertex)
-						{
-							ot.origin().setMutable(false);
-							ot.destination().setMutable(false);
-						}
-					}
-			}
-		}
-	}
 	/**
 	 * Tag all edges on group boundaries with a given attribute.
 	 */
@@ -2047,9 +1968,6 @@ public class Mesh implements Serializable
 			if (v.isManifold())
 				continue;
 			Triangle [] links = (Triangle []) v.getLink();
-			// Fail gracefully if called before buildAdjacency()
-			if (links == null)
-				continue;
 			HashSet triangles = new HashSet();
 			for (Triangle t : links)
 				triangles.add(t);
@@ -2076,47 +1994,6 @@ public class Mesh implements Serializable
 			}
 		}
 		return true;
-	}
-
-	public Iterable<Vertex> getManifoldVertices()
-	{
-		return new Iterable<Vertex>(){
-			public Iterator<Vertex> iterator() {
-				return new Iterator<Vertex>(){
-					private Iterator<Vertex> delegateIt = nodeList.iterator();
-					private Vertex next;
-					private void nextImpl()
-					{
-						if(next == null)
-						{
-							while(delegateIt.hasNext())
-							{
-								next = delegateIt.next();
-								if(next.isManifold())
-									break;
-							}
-						}
-					}
-					public boolean hasNext() {
-						nextImpl();
-						return next != null;
-					}
-
-					public Vertex next() {
-						nextImpl();
-						if(next == null)
-							throw new NoSuchElementException();
-						Vertex toReturn = next;
-						next = null;
-						return toReturn;
-					}
-
-					public void remove() {
-						throw new UnsupportedOperationException();
-					}
-				};
-			}
-		};
 	}
 
 	// Useful for debugging

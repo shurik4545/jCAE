@@ -37,22 +37,12 @@
 #endif
 %}
 
-class BRepBuilderAPI_Command
-{
-	%rename(isDone) IsDone;
-	BRepBuilderAPI_Command()=0;
-	public:
-	virtual Standard_Boolean  IsDone() const;
-};
-
-class BRepBuilderAPI_MakeShape: public BRepBuilderAPI_Command
+class BRepBuilderAPI_MakeShape
 {
 	//Hide the constructor to make this class abstract
 	BRepBuilderAPI_MakeShape()=0;
 	public:
-	%rename(build) Build;
 	%rename(shape) Shape;
-	virtual void Build();
 	const TopoDS_Shape& Shape() const;
 };
 
@@ -112,6 +102,13 @@ class BRepBuilderAPI_MakeEdge : public BRepBuilderAPI_MakeShape
 	public:
 	BRepBuilderAPI_MakeEdge();
 	BRepBuilderAPI_MakeEdge(const Handle_Geom_Curve& L);
+	BRepBuilderAPI_MakeEdge(const Handle_Geom_Curve& L, const Standard_Real p1, const Standard_Real p2);
+	BRepBuilderAPI_MakeEdge(const Handle_Geom_Curve& L, const gp_Pnt& P1, const gp_Pnt& P2);
+	BRepBuilderAPI_MakeEdge(const Handle_Geom_Curve& L, const TopoDS_Vertex& V1, const TopoDS_Vertex& V2);
+	BRepBuilderAPI_MakeEdge(const Handle_Geom2d_Curve& L, const Handle_Geom_Surface& S);
+	BRepBuilderAPI_MakeEdge(const Handle_Geom2d_Curve& L, const Handle_Geom_Surface& S, const Standard_Real p1, const Standard_Real p2);
+	BRepBuilderAPI_MakeEdge(const Handle_Geom2d_Curve& L, const Handle_Geom_Surface& S, const gp_Pnt& P1, const gp_Pnt& P2);
+	BRepBuilderAPI_MakeEdge(const Handle_Geom2d_Curve& L, const Handle_Geom_Surface& S, const TopoDS_Vertex& V1, const TopoDS_Vertex& V2);
 	BRepBuilderAPI_MakeEdge(const TopoDS_Vertex& V1,const TopoDS_Vertex& V2);
 	BRepBuilderAPI_MakeEdge(const gp_Pnt& P1,const gp_Pnt& P2);
 	BRepBuilderAPI_MakeEdge(const gp_Circ& L);
@@ -129,10 +126,23 @@ class BRepBuilderAPI_MakeEdge : public BRepBuilderAPI_MakeShape
 class BRepBuilderAPI_MakeFace  : public BRepBuilderAPI_MakeShape
 {
 	%rename(face) Face;
+	%rename(init) Init;
+	%rename(add) Add;
+	%rename(isDone) IsDone;
 	public:
-	BRepBuilderAPI_MakeFace(const TopoDS_Wire& W,
-		const Standard_Boolean OnlyPlane = Standard_False);
-    BRepBuilderAPI_MakeFace(const TopoDS_Face& F,const TopoDS_Wire& W);
+	BRepBuilderAPI_MakeFace();
+	BRepBuilderAPI_MakeFace(const TopoDS_Face& F);
+	BRepBuilderAPI_MakeFace(const Handle_Geom_Surface& S,const Standard_Real TolDegen);
+	BRepBuilderAPI_MakeFace(const Handle_Geom_Surface& S,const Standard_Real UMin,const Standard_Real UMax,const Standard_Real VMin,const Standard_Real VMax,const Standard_Real TolDegen);
+	BRepBuilderAPI_MakeFace(const TopoDS_Wire& W,const Standard_Boolean OnlyPlane = Standard_False);
+    BRepBuilderAPI_MakeFace(const Handle_Geom_Surface& S,const TopoDS_Wire& W,const Standard_Boolean Inside = Standard_True);
+	BRepBuilderAPI_MakeFace(const TopoDS_Face& F,const TopoDS_Wire& W);
+	void Init(const TopoDS_Face& F);
+	void Init(const Handle_Geom_Surface& S,const Standard_Boolean Bound,const Standard_Real TolDegen);
+	void Init(const Handle_Geom_Surface& S,const Standard_Real UMin,const Standard_Real UMax,const Standard_Real VMin,const Standard_Real VMax,const Standard_Real TolDegen);
+	void Add(const TopoDS_Wire& W);
+	Standard_Boolean IsDone() const;
+	const TopoDS_Face& Face() const;
 	//const TopoDS_Face& Face() const;
 };
 
@@ -219,4 +229,3 @@ class BRepBuilderAPI_NurbsConvert : public BRepBuilderAPI_ModifyShape
 	void Perform(const TopoDS_Shape& S,
 		const Standard_Boolean Copy = Standard_False) ;
 };
-

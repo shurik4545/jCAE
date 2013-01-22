@@ -33,9 +33,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.border.TitledBorder;
 import javax.xml.parsers.ParserConfigurationException;
 import org.jcae.mesh.xmldata.MeshExporter;
-import org.jcae.netbeans.DoubleFormatter;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -48,7 +48,7 @@ public class ExportGroupAction extends CookieAction
 {
 	public static class ChooseUnitPanel extends JPanel
 	{	
-		private JFormattedTextField scaleField = new JFormattedTextField(1E-3);
+		private JFormattedTextField scaleField = new JFormattedTextField(1.0);
 		private JComboBox unitCombo = new JComboBox(new Object[]{"m", "mm"});
 		
 		public ChooseUnitPanel()
@@ -77,7 +77,6 @@ public class ExportGroupAction extends CookieAction
 			gbc.weightx = 1.0;
 			gbc.weighty = 1.0;
 			add(scaleField, gbc);
-			scaleField.setFormatterFactory(DoubleFormatter.FACTORY);
 		}
 		
 		public boolean isMeters()
@@ -132,11 +131,11 @@ public class ExportGroupAction extends CookieAction
 			jfc.setCurrentDirectory(FileUtil.toFile(meshDirFile));
 			if(jfc.showSaveDialog(null)==JFileChooser.APPROVE_OPTION)
 			{
-				String[] ids=new String[arg0.length];
+				int[] ids=new int[arg0.length];
 				for(int i=0; i<arg0.length; i++)
 				{
 					GroupNode n=arg0[i].getCookie(GroupNode.class);
-					ids[i]=n.getGroup().getName();
+					ids[i]=n.getGroup().getId();
 				}			
 				String unvFile=jfc.getSelectedFile().getPath();
 				

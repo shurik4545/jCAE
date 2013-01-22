@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.jcae.mesh.amibe.metrics.MetricSupport.AnalyticMetricInterface;
 
 
 /**
@@ -50,26 +49,10 @@ public class RemeshPolyline
 	// Map containing the metrics at each input point
 	private final Map<Vertex, EuclidianMetric3D> metricsMap = new LinkedHashMap<Vertex, EuclidianMetric3D>();
 
-	private boolean buildBackgroundLink;
-	/** Keep track of on which background segment each point were inserted */
-	private List<Integer> backgroundLink;
 	public RemeshPolyline(Mesh m, List<Vertex> vertices, double size)
 	{
 		this(m, vertices,
 			Collections.nCopies(vertices.size(), new EuclidianMetric3D(size)));
-	}
-
-	/**
-	 * Ask to keep track of on which background segment each point were inserted
-	 * @see getBackGroundLink
-	 */
-	public void setBuildBackgroundLink(boolean buildBackgroundLink) {
-		this.buildBackgroundLink = buildBackgroundLink;
-	}
-
-	public List<Integer> getBackgroundLink()
-	{
-		return backgroundLink;
 	}
 	/**
 	 * Constructor.
@@ -97,7 +80,7 @@ public class RemeshPolyline
 		LOGGER.log(Level.FINE, "Polyline approximate length: {0}", abscissa);
 	}
 
-	public RemeshPolyline(Mesh m, List<Vertex> vertices, AnalyticMetricInterface analytic)
+	public RemeshPolyline(Mesh m, List<Vertex> vertices, Remesh.AnalyticMetricInterface analytic)
 	{
 		mesh = m;
 		double abscissa = 0;
@@ -105,7 +88,8 @@ public class RemeshPolyline
 		for (Vertex v : vertices)
 		{
 			bgWire.add(v);
-			metricsMap.put(v, new EuclidianMetric3D(analytic.getTargetSizeTopo(m, v)));
+			double [] pos = v.getUV();
+			metricsMap.put(v, new EuclidianMetric3D(analytic.getTargetSize(pos[0], pos[1], pos[2])));
 			if (last != null)
 				abscissa += v.distance3D(last);
 			last = v;
@@ -121,8 +105,6 @@ public class RemeshPolyline
 
 	public List<Vertex> compute()
 	{
-		if(buildBackgroundLink)
-			backgroundLink = new ArrayList<Integer>();
 		List<Vertex> newWire = new ArrayList<Vertex>();
 		Vertex last = bgWire.get(bgWire.size() -1);
 		newWire.add(bgWire.get(0));
@@ -144,8 +126,6 @@ public class RemeshPolyline
 				// We found a good discretization, replace the
 				// last point by the real destination point.
 				newWire.set(newWire.size() - 1, last);
-				if(buildBackgroundLink)
-					backgroundLink.set(newWire.size() - 1, bgWire.size() - 2);
 				break;
 			}
 			else if (lastLength > target - maxError || 1 == newWire.size())
@@ -155,8 +135,6 @@ public class RemeshPolyline
 				// the polyline is too small and does not have to
 				// be discretized.
 				newWire.add(last);
-				if(buildBackgroundLink)
-					backgroundLink.add(bgWire.size() - 2);
 				break;
 			}
 			else if (lastLength < 0.5 * target)
@@ -173,8 +151,6 @@ public class RemeshPolyline
 				// Use a relaxation factor of 0.6
 				target += 0.6 * lastLength / (newWire.size() - 1);
 				newWire.set(newWire.size() - 1, last);
-				if(buildBackgroundLink)
-					backgroundLink.set(newWire.size() - 1, bgWire.size() - 2);
 			}
 			else
 			{
@@ -190,8 +166,6 @@ public class RemeshPolyline
 				// Use a relaxation factor of 0.6
 				target -= 0.6 * (target - lastLength) / (newWire.size());
 				newWire.add(last);
-				if(buildBackgroundLink)
-					backgroundLink.add(bgWire.size() - 2);
 			}
 
 			if (LOGGER.isLoggable(Level.FINE))
@@ -220,11 +194,6 @@ public class RemeshPolyline
 		Vertex vE = bgWire.get(1);
 		EuclidianMetric3D mE = metricsMap.get(vE);
 		newWire.add(vS);
-		if(buildBackgroundLink)
-		{
-			backgroundLink.clear();
-			backgroundLink.add(segment);
-		}
 
 		// Metrics are interpolated geometrically.
 		double hS = mS.getUnitBallBBox()[0];
@@ -291,8 +260,6 @@ public class RemeshPolyline
 					vS = np;
 					mS = m;
 					newWire.add(np);
-					if(buildBackgroundLink)
-						backgroundLink.add(segment);
 					target = targetSize;
 					accumulated = 0;
 					break;

@@ -32,11 +32,11 @@
  * gp_Pnt
  */
 
-%typemap(jni) gp_Pnt, const gp_Pnt&  "jdoubleArray"
-%typemap(jtype) gp_Pnt, const gp_Pnt& "double[]"
-%typemap(jstype) gp_Pnt, const gp_Pnt& "double[]"
+%typemap(jni) gp_Pnt, gp_Pnt&, const gp_Pnt&  "jdoubleArray"
+%typemap(jtype) gp_Pnt, gp_Pnt&, const gp_Pnt& "double[]"
+%typemap(jstype) gp_Pnt, gp_Pnt&, const gp_Pnt& "double[]"
 
-%typemap(in) gp_Pnt, const gp_Pnt&
+%typemap(in) gp_Pnt, gp_Pnt&, const gp_Pnt&
 {
 	if(JCALL1(GetArrayLength, jenv, $input)!=3)
 		SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "array length must be 3");
@@ -49,18 +49,23 @@
     $result=XYZtoDoubleArray(jenv, $1->XYZ());
 }
 
+%typemap(out) gp_Pnt&
+{
+    $result=XYZtoDoubleArray(jenv, $1->XYZ());
+}
+
 %typemap(out) gp_Pnt
 {
     $result=XYZtoDoubleArray(jenv, $1.XYZ());
 }
 
-%typemap(freearg) gp_Pnt, const gp_Pnt&
+%typemap(freearg) gp_Pnt, gp_Pnt&, const gp_Pnt&
 {
 	delete $1;
 }
 
-%typemap(javain) gp_Pnt, const gp_Pnt& "$javainput"
-%typemap(javaout) gp_Pnt, const gp_Pnt&
+%typemap(javain) gp_Pnt, gp_Pnt&, const gp_Pnt& "$javainput"
+%typemap(javaout) gp_Pnt, gp_Pnt&, const gp_Pnt&
 {
 	return $jnicall;
 }
@@ -69,11 +74,11 @@
  * gp_Pnt2d
  */
 
-%typemap(jni) gp_Pnt2d, const gp_Pnt2d&  "jdoubleArray"
-%typemap(jtype) gp_Pnt2d, const gp_Pnt2d& "double[]"
-%typemap(jstype) gp_Pnt2d, const gp_Pnt2d& "double[]"
+%typemap(jni) gp_Pnt2d, gp_Pnt2d&, const gp_Pnt2d&  "jdoubleArray"
+%typemap(jtype) gp_Pnt2d, gp_Pnt2d&, const gp_Pnt2d& "double[]"
+%typemap(jstype) gp_Pnt2d, gp_Pnt2d&, const gp_Pnt2d& "double[]"
 
-%typemap(in) gp_Pnt2d, const gp_Pnt2d&
+%typemap(in) gp_Pnt2d, gp_Pnt2d&, const gp_Pnt2d&
 {
 	if(JCALL1(GetArrayLength, jenv, $input)!=2)
 		SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "array length must be 2");
@@ -81,18 +86,18 @@
 	$1=new gp_Pnt2d(naxe[0],naxe[1]);
 }
 
-%typemap(freearg) gp_Pnt2d, const gp_Pnt2d&
+%typemap(freearg) gp_Pnt2d, gp_Pnt2d&, const gp_Pnt2d&
 {
 	delete $1;
 }
 
-%typemap(javain) gp_Pnt2d, const gp_Pnt2d& "$javainput"
-%typemap(javaout) gp_Pnt2d, const gp_Pnt2d&
+%typemap(javain) gp_Pnt2d, gp_Pnt2d&, const gp_Pnt2d& "$javainput"
+%typemap(javaout) gp_Pnt2d, gp_Pnt2d&, const gp_Pnt2d&
 {
 	return $jnicall;
 }
 
-%typemap(out) gp_Pnt2d, const gp_Pnt2d&
+%typemap(out) gp_Pnt2d, gp_Pnt2d&, const gp_Pnt2d&
 {
     jdouble nativeArray[]={$1.X(), $1.Y()};
 	jdoubleArray toReturn=JCALL1(NewDoubleArray, jenv, 2);
@@ -111,7 +116,7 @@
 	if(JCALL1(GetArrayLength, jenv, $input)!=4)
 		SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "array length must be 4");
 	jdouble * naxe=JCALL2(GetDoubleArrayElements, jenv, $input, NULL);
-	$1=new gp_Pln(naxe[0],naxe[1],naxe[2],naxe[4]);
+	$1=new gp_Pln(naxe[0],naxe[1],naxe[2],naxe[3]);
 }
 
 %typemap(freearg) gp_Pln, const gp_Pln&
@@ -138,11 +143,11 @@
 /**
  * gp_Vec
  */
-%typemap(jni) gp_Vec, const gp_Vec&  "jdoubleArray"
-%typemap(jtype) gp_Vec, const gp_Vec& "double[]"
-%typemap(jstype) gp_Vec, const gp_Vec& "double[]"
+%typemap(jni) gp_Vec, gp_Vec&, const gp_Vec&  "jdoubleArray"
+%typemap(jtype) gp_Vec, gp_Vec&, const gp_Vec& "double[]"
+%typemap(jstype) gp_Vec, gp_Vec&, const gp_Vec& "double[]"
 
-%typemap(in) gp_Vec, const gp_Vec&
+%typemap(in) gp_Vec, gp_Vec&, const gp_Vec&
 {
 	if(JCALL1(GetArrayLength, jenv, $input)!=3)
 		SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "array length must be 3");
@@ -150,21 +155,32 @@
 	$1=new gp_Vec(naxe[0],naxe[1],naxe[2]);
 }
 
-%typemap(freearg) gp_Vec, const gp_Vec&
+%typemap(freearg) gp_Vec, gp_Vec&, const gp_Vec&
 {
 	delete $1;
 }
 
-%typemap(javain) gp_Vec, const gp_Vec& "$javainput"
-%typemap(javaout) gp_Vec, const gp_Vec&
+%typemap(javain) gp_Vec, gp_Vec&, const gp_Vec& "$javainput"
+%typemap(javaout) gp_Vec, gp_Vec&, const gp_Vec&
 {
 	return $jnicall;
 }
 
-%typemap(out) gp_Vec, const gp_Vec&
+%typemap(out) gp_Vec
+{
+	$result=XYZtoDoubleArray(jenv, $1.XYZ());
+}
+
+%typemap(out) gp_Vec&
 {
 	$result=XYZtoDoubleArray(jenv, $1->XYZ());
 }
+
+%typemap(out) const gp_Vec&
+{
+	$result=XYZtoDoubleArray(jenv, $1->XYZ());
+}
+
 
 /**
  * gp_Dir
@@ -198,6 +214,37 @@
 
 %typemap(javain) gp_Dir, const gp_Dir&, gp_Dir&  "$javainput"
 %typemap(javaout) gp_Dir, const gp_Dir&, gp_Dir&
+{
+	return $jnicall;
+}
+
+/**
+ * gp_Ax3
+ */
+%typemap(jni) gp_Ax3, const gp_Ax3&  "jdoubleArray"
+%typemap(jtype) gp_Ax3, const gp_Ax3& "double[]"
+%typemap(jstype) gp_Ax3, const gp_Ax3& "double[]"
+
+%typemap(in) gp_Ax3, const gp_Ax3&
+{
+	if(JCALL1(GetArrayLength, jenv, $input)!=6)
+		SWIG_JavaThrowException(jenv, SWIG_JavaIllegalArgumentException, "array length must be 6");
+	jdouble * naxe=JCALL2(GetDoubleArrayElements, jenv, $input, NULL);
+	$1=new gp_Ax3(gp_Pnt(naxe[0],naxe[1],naxe[2]), gp_Dir(naxe[3], naxe[4], naxe[5]));
+}
+
+%typemap(freearg) gp_Ax3, const gp_Ax3&
+{
+	delete $1;
+}
+
+%typemap(out) gp_Ax3, const gp_Ax3&
+{
+	##error TODO
+}
+
+%typemap(javain) gp_Ax3, const gp_Ax3& "$javainput"
+%typemap(javaout) gp_Ax3, const gp_Ax3&
 {
 	return $jnicall;
 }
@@ -265,25 +312,11 @@
 }
 
 /**
- * gp_Trsf
+ * GP_Trsf
  */
  %{#include <gp_Trsf.hxx>%}
  
 %rename(GP_Trsf) gp_Trsf;
-
-%typemap(javacode) gp_Trsf
-%{
-	public void setValues(double[] matrix, double tolAng, double tolDist)
-	{
-		if(matrix.length!=12)
-			throw new IllegalArgumentException("matrix length must be 12");
-		setValues(
-			matrix[0], matrix[1], matrix[2], matrix[3],
-			matrix[4], matrix[5], matrix[6], matrix[7],
-			matrix[8], matrix[9], matrix[10], matrix[11],
-			tolAng, tolDist);
-	}	
-%}
 
 class gp_Trsf
 {
@@ -292,6 +325,7 @@ class gp_Trsf
 	%rename(setValues) SetValues;
 	public:
 	gp_Trsf();
+	gp_Trsf(const gp_Trsf2d& T);
 	void SetRotation(const gp_Ax1& A1,const Standard_Real Ang) ;
 	void SetTranslation(const gp_Vec& V) ;
 	void SetValues(const Standard_Real a11,const Standard_Real a12,
@@ -319,6 +353,20 @@ class gp_Trsf
 }
 
 /**
+ * GP_Trsf2d
+ */
+ %{#include <gp_Trsf2d.hxx>%}
+ 
+%rename(GP_Trsf2d) gp_Trsf2d;
+
+class gp_Trsf2d
+{
+	public:
+	gp_Trsf2d();
+	gp_Trsf2d(const gp_Trsf& T);
+};
+
+/**
  * GP_Circ
  */
 %{#include <gp_Circ.hxx>%}
@@ -326,7 +374,8 @@ class gp_Trsf
 class gp_Circ
 {
     public:
-    gp_Circ(const gp_Ax2& axis, const Standard_Real radius);
+	gp_Circ();
+    gp_Circ(const gp_Ax2& Axis, const Standard_Real Radius);
 };
 
 /**
@@ -337,10 +386,92 @@ class gp_Circ
 class gp_Parab
 {
     public:
+	gp_Parab();
 	gp_Parab(const gp_Ax2& A2,const Standard_Real Focal);
 	gp_Parab(const gp_Ax1& D,const gp_Pnt& F);
 };
 
+/**
+ * GP_Lin
+ */
+%{#include <gp_Lin.hxx>%}
+%rename(GP_Lin) gp_Lin;
+class gp_Lin
+{
+    public:
+	gp_Lin();
+	gp_Lin(const gp_Ax1& A1);
+	gp_Lin(const gp_Pnt& P,const gp_Dir& V);
+};
 
+/**
+ * GP_Elips
+ */
+%{#include <gp_Elips.hxx>%}
+%rename(GP_Elips) gp_Elips;
+class gp_Elips
+{
+    public:
+	gp_Elips();
+	gp_Elips(const gp_Ax2& A2,const Standard_Real MajorRadius,const Standard_Real MinorRadius);
+};
 
+/**
+ * GP_Hypr
+ */
+%{#include <gp_Hypr.hxx>%}
+%rename(GP_Hypr) gp_Hypr;
+class gp_Hypr
+{
+    public:
+	gp_Hypr();
+	gp_Hypr(const gp_Ax2& A2,const Standard_Real MajorRadius,const Standard_Real MinorRadius);
+};
 
+/**
+ * GP_Cone
+ */
+%{#include <gp_Cone.hxx>%}
+%rename(GP_Cone) gp_Cone;
+class gp_Cone
+{
+    public:
+	gp_Cone();
+	gp_Cone(const gp_Ax3& A3,const Standard_Real Ang,const Standard_Real Radius);
+};
+
+/**
+ * GP_Cylinder
+ */
+%{#include <gp_Cylinder.hxx>%}
+%rename(GP_Cylinder) gp_Cylinder;
+class gp_Cylinder
+{
+    public:
+	gp_Cylinder();
+	gp_Cylinder(const gp_Ax3& A3,const Standard_Real Radius);
+};
+
+/**
+ * GP_Sphere
+ */
+%{#include <gp_Sphere.hxx>%}
+%rename(GP_Sphere) gp_Sphere;
+class gp_Sphere
+{
+    public:
+	gp_Sphere();
+	gp_Sphere(const gp_Ax3& A3,const Standard_Real Radius);
+};
+
+/**
+ * GP_Torus
+ */
+%{#include <gp_Torus.hxx>%}
+%rename(GP_Torus) gp_Torus;
+class gp_Torus
+{
+    public:
+	gp_Torus();
+	gp_Torus(const gp_Ax3& A3,const Standard_Real MajorRadius,const Standard_Real MinorRadius);
+};

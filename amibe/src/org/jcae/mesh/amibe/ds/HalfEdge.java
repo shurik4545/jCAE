@@ -395,9 +395,12 @@ public class HalfEdge extends AbstractHalfEdge implements Serializable
 	
 	public final double checkSwap3D(Mesh mesh, double minCos)
 	{
-		return checkSwap3D(mesh, minCos, 0.0, 0.0, true, -2.0, -2.0);
+		return checkSwap3D(mesh, minCos, 0.0);
 	}
-
+	public final double checkSwap3D(Mesh mesh, double minCos, double maxLength)
+	{
+		return checkSwap3D(mesh, minCos, 0.0, 0, true);
+	}
 	/**
 	 * Checks the dihedral angle of an edge.
 	 * Warning: this method uses temp[0], temp[1], temp[2] and temp[3] temporary arrays.
@@ -409,18 +412,11 @@ public class HalfEdge extends AbstractHalfEdge implements Serializable
 	 *    at least multiplied by this factor, the returned value is -1
 	 * @param expectInsert Set it to true if later point insertion are expected.
 	 *    This is typically the case before and during ReMesh.
-	 * @param minCosAfter  if the dot product of the normals to adjacent
-	 *    triangles after the swap, is lower than minCos, then <code>-1.0</code>
-	 *    is returned.
-	 * @param minCosForceSwap if the dot product of the normals to adjacent
-	 *    is lower than minCosForceSwap return 1.0 if swaping would increase the
-	 *    angle cosinus, even if quality is not improved.
 	 * @return the minimum quality of the two triangles generated
 	 *    by swapping this edge or -1 if the swap must not be done
 	 */
 	public final double checkSwap3D(Mesh mesh, double minCos, double maxLength,
-		double minQualityFactor, boolean expectInsert, double minCosAfter,
-		double minCosForceSwap)
+		double minQualityFactor, boolean expectInsert)
 	{
 		double invalid = -1.0;
 		if (hasAttributes(IMMUTABLE))
@@ -446,28 +442,15 @@ public class HalfEdge extends AbstractHalfEdge implements Serializable
 		double[] temp2 = mesh.temp.t3_2;
 		double[] temp3 = mesh.temp.t3_3;
 		double[] temp4 = mesh.temp.t3_4;
-		//normals of current side triangles
 		double s1 = Matrix3D.computeNormal3D(o.getUV(), d.getUV(), a.getUV(), temp0, temp1, temp2);
 		double s2 = Matrix3D.computeNormal3D(d.getUV(), o.getUV(), n.getUV(), temp0, temp1, temp3);
-		double cos = Matrix3D.prodSca(temp2, temp3);
-		if (cos < minCos)
-			return invalid;
-
-		// Normals between swaped side triangles
+		// Make sure that edge swap does not create inverted triangles
 		double s3 = Matrix3D.computeNormal3D(o.getUV(), n.getUV(), a.getUV(), temp0, temp1, temp2);
 		double s4 = Matrix3D.computeNormal3D(d.getUV(), a.getUV(), n.getUV(), temp0, temp1, temp3);
-		if(minCosForceSwap >= -1.0 || minCosAfter >= -1.0)
-		{
-			double cosAfter = Matrix3D.prodSca(temp2, temp3);
-			if(cos < minCosForceSwap && cosAfter > cos)
-				return 1.0;
-			if(cosAfter < minCosAfter)
-				return invalid;
-		}
-
-		// Make sure that edge swap does not create inverted triangles
 		if (minCos > -1.0)
 		{
+			if (Matrix3D.prodSca(temp2, temp3) < minCos)
+				return invalid;
 			for (int i = 0; i < 4; i++)
 			{
 				HalfEdge h = (i == 0 ? next.next : (i == 1 ? sym.next : (i == 2 ? next : sym.next.next)));
@@ -725,52 +708,16 @@ public class HalfEdge extends AbstractHalfEdge implements Serializable
 			return false;
 		ignored.clear();
 
-		if(hasAttributes(NONMANIFOLD))
+		//  Topology check.
+		//  See in AbstractHalfEdgeTest.buildMeshTopo() why this
+		//  check is needed.
+		//  When edge is non manifold, we do not use Vertex.getNeighbourIteratorVertex()
+		//  because checks have to be performed by fans.
+		for (Iterator<AbstractHalfEdge> it = fanIterator(); it.hasNext(); )
 		{
-			//  Topology check.
-			//  See in AbstractHalfEdgeTest.buildMeshTopo() why this
-			//  check is needed.
-			//  When edge is non manifold, we do not use Vertex.getNeighbourIteratorVertex()
-			//  because checks have to be performed by fans.
-			for (Iterator<AbstractHalfEdge> it = fanIterator(); it.hasNext(); )
-			{
-				HalfEdge f = (HalfEdge) it.next();
-				if (!f.canCollapseTopology())
-					return false;
-			}
-			return true;
-		}
-		else
-			return canCollapseTopology2(mesh);
-	}
-
-	/**
-	 * Same as canCollapseTopology but for manifold edges with non-manifold
-	 * vertices.
-	 */
-	private boolean canCollapseTopology2(Mesh mesh)
-	{
-		Vertex origin = origin();
-		Vertex destination = destination();
-		Iterator<Vertex> it =  origin.getNeighbourIteratorVertex();
-		Collection<Vertex> neighbours = new HashSet<Vertex>();
-		while(it.hasNext())
-		{
-			Vertex v = it.next();
-			if(v != mesh.outerVertex && v != destination)
-				neighbours.add(v);
-		}
-		it =  destination.getNeighbourIteratorVertex();
-		int cnt = 0;
-		while(it.hasNext())
-		{
-			Vertex v = it.next();
-			if(v != origin && mesh.outerVertex != v && neighbours.remove(v))
-			{
-				if(cnt > 1)
-					return false;
-				cnt ++;
-			}
+			HalfEdge f = (HalfEdge) it.next();
+			if (!f.canCollapseTopology())
+				return false;
 		}
 		return true;
 	}
@@ -840,20 +787,6 @@ public class HalfEdge extends AbstractHalfEdge implements Serializable
 		return true;
 	}
 	
-	/**
-	 * Check that swapped edge does not already exists
-	 */
-	public boolean canSwapTopology()
-	{
-		Vertex a1 = apex();
-		Vertex a2 = sym.apex();
-		Iterator<Vertex> it = a1.getNeighbourIteratorVertex();
-		while(it.hasNext())
-			if(it.next() == a2)
-				return false;
-		return true;
-	}
-
 	final boolean canMoveOrigin(Mesh mesh, double [] newpt)
 	{
 		assert origin().isManifold() && origin().isMutable();
@@ -952,7 +885,7 @@ public class HalfEdge extends AbstractHalfEdge implements Serializable
 				f = f.next;
 			else if (f.apex() == o)
 				f = f.next.next;
-			assert f.origin() == o: f.origin()+" not the same as "+o;
+			assert f.origin() == o;
 			if (!f.checkNewRingNormalsSameFanNonManifoldVertex(mesh, newpt, ignored))
 				return false;
 		}

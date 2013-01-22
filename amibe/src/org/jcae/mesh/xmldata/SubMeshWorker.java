@@ -220,7 +220,7 @@ public class SubMeshWorker
 			Mesh workMesh = new Mesh();
 			MeshReader.readObject3D(workMesh, extractedDir);
 
-			org.jcae.mesh.amibe.projection.MeshLiaison liaison = new org.jcae.mesh.amibe.projection.MapMeshLiaison(workMesh);
+			org.jcae.mesh.amibe.projection.MeshLiaison liaison = new org.jcae.mesh.amibe.projection.MeshLiaison(workMesh);
 			liaison.getMesh().tagFreeEdges(org.jcae.mesh.amibe.ds.AbstractHalfEdge.IMMUTABLE);
 			liaison.getMesh().buildRidges(0.9);
 

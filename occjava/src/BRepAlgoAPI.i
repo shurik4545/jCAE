@@ -23,6 +23,8 @@
 %{#include <BRepAlgoAPI_Common.hxx>%}
 %{#include <BRepAlgoAPI_Cut.hxx>%}
 %{#include <BRepAlgoAPI_Section.hxx>%}
+%{#include <gp_Pln.hxx>%}
+%{#include <Handle_Geom_Surface.hxx>%}
 
 class BRepAlgoAPI_BooleanOperation: public BRepBuilderAPI_MakeShape
 {
@@ -35,6 +37,13 @@ class BRepAlgoAPI_BooleanOperation: public BRepBuilderAPI_MakeShape
 	%rename(hasDeleted) HasDeleted;
 	BRepAlgoAPI_BooleanOperation()=0;
 	public:
+	virtual  void Build();
+	const TopoDS_Shape& Shape1() const;
+	const TopoDS_Shape& Shape2() const;
+	Standard_Boolean FuseEdges() const;
+	void RefineEdges();
+	Standard_Boolean BuilderCanWork() const;
+	Standard_Integer ErrorStatus() const;
 	virtual const TopTools_ListOfShape& Modified(const TopoDS_Shape& aS) ;
 	virtual Standard_Boolean IsDeleted(const TopoDS_Shape& aS) ;
 	virtual const TopTools_ListOfShape& Modified2(const TopoDS_Shape& aS) ;
@@ -42,6 +51,8 @@ class BRepAlgoAPI_BooleanOperation: public BRepBuilderAPI_MakeShape
 	virtual Standard_Boolean HasModified() const;
 	virtual Standard_Boolean HasGenerated() const;
 	virtual Standard_Boolean HasDeleted() const;
+	void Destroy();
+	const TopTools_ListOfShape& SectionEdges();
 };
 
 class BRepAlgoAPI_Fuse: public BRepAlgoAPI_BooleanOperation
@@ -65,6 +76,25 @@ class BRepAlgoAPI_Cut: public BRepAlgoAPI_BooleanOperation
 class BRepAlgoAPI_Section: public BRepAlgoAPI_BooleanOperation
 {
 	public:
-	BRepAlgoAPI_Section(const TopoDS_Shape& S1,const TopoDS_Shape& S2);
+	BRepAlgoAPI_Section(const TopoDS_Shape& Sh1,const TopoDS_Shape& Sh2);
+	BRepAlgoAPI_Section(const TopoDS_Shape& Sh,const gp_Pln& Pl);
+	BRepAlgoAPI_Section(const TopoDS_Shape& Sh,const Handle_Geom_Surface& Sf);
+	BRepAlgoAPI_Section(const Handle_Geom_Surface& Sf,const TopoDS_Shape& Sh);
+	BRepAlgoAPI_Section(const Handle_Geom_Surface& Sf1,const Handle_Geom_Surface& Sf2);
+	void Init1(const TopoDS_Shape& S1);
+	void Init1(const gp_Pln& Pl);
+	void Init1(const Handle_Geom_Surface& Sf);
+	void Init2(const TopoDS_Shape& S2);
+	void Init2(const gp_Pln& Pl);
+	void Init2(const Handle_Geom_Surface& Sf);
+	void Approximation(const Standard_Boolean B);
+	void ComputePCurveOn1(const Standard_Boolean B);
+	void ComputePCurveOn2(const Standard_Boolean B);
+	void Build();
+	Standard_Boolean HasAncestorFaceOn1(const TopoDS_Shape& E,TopoDS_Shape& F) const;
+	Standard_Boolean HasAncestorFaceOn2(const TopoDS_Shape& E,TopoDS_Shape& F) const;
+	Handle_Geom2d_Curve PCurveOn1(const TopoDS_Shape& E) const;
+	Handle_Geom2d_Curve PCurveOn2(const TopoDS_Shape& E) const;
+
 };
 

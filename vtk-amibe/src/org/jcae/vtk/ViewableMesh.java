@@ -29,8 +29,8 @@ import java.util.Map.Entry;
 import org.jcae.vtk.AbstractNode.ActorCustomiser;
 import org.jcae.vtk.AbstractNode.MapperCustomiser;
 import org.jcae.vtk.LeafNode.DataProvider;
+import vtk.vtkMapper;
 import vtk.vtkActor;
-import vtk.vtkPainterPolyDataMapper;
 import vtk.vtkProperty;
 
 /**
@@ -57,19 +57,21 @@ public class ViewableMesh extends Viewable
 	private boolean beamVertVisible = true;
 	private final static MapperCustomiser MAPPER_CUSTOMIZER = new MapperCustomiser() {
 		@Override
-		public void customiseMapper(vtkPainterPolyDataMapper mapper)
+		public void customiseMapper(vtkMapper mapper)
 		{
-			Utils.setPolygonOffset(mapper, Utils.getOffsetFactor(),
-				Utils.getOffsetValue()*2);
+			mapper.SetResolveCoincidentTopologyToPolygonOffset();
+			mapper.SetResolveCoincidentTopologyPolygonOffsetParameters(
+				Utils.getOffsetFactor(), Utils.getOffsetValue()*2.);
 		}
 	};
 
 	private final static MapperCustomiser MAPPER_CUSTOMIZER_S = new MapperCustomiser() {
 		@Override
-		public void customiseMapper(vtkPainterPolyDataMapper mapper)
+		public void customiseMapper(vtkMapper mapper)
 		{
-			Utils.setPolygonOffset(mapper, Utils.getOffsetFactor(),
-				Utils.getOffsetValue());
+			mapper.SetResolveCoincidentTopologyToPolygonOffset();
+			mapper.SetResolveCoincidentTopologyPolygonOffsetParameters(
+				Utils.getOffsetFactor(), Utils.getOffsetValue());
 		}
 	};
 	

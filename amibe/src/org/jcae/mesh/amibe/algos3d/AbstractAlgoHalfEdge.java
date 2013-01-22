@@ -48,6 +48,7 @@ public abstract class AbstractAlgoHalfEdge
 	int nrFinal = 0;
 	int nrTriangles = 0;
 	double tolerance = 0.0;
+	double maxEdgeLength = -1.0;
 	int processed = 0;
 	int swapped = 0;
 	int notProcessed = 0;
@@ -75,22 +76,10 @@ public abstract class AbstractAlgoHalfEdge
 		mesh = m;
 		liaison = meshLiaison;
 	}
-
-	protected void preCheck()
-	{
-		assert mesh.checkNoDegeneratedTriangles();
-		assert mesh.checkNoInvertedTriangles();
-	}
-
-	protected void postCheck()
-	{
-		assert mesh.checkNoDegeneratedTriangles();
-		assert mesh.checkNoInvertedTriangles();
-	}
-
 	public final void compute()
 	{
-		preCheck();
+		assert mesh.checkNoDegeneratedTriangles();
+		assert mesh.checkNoInvertedTriangles();
 		thisLogger().info("Run "+getClass().getName());
 		mesh.getTrace().println("# Begin "+getClass().getName());
 		preProcessAllHalfEdges();
@@ -101,7 +90,8 @@ public abstract class AbstractAlgoHalfEdge
 		processAllHalfEdges();
 		thisLogger().info("Final number of triangles: "+countInnerTriangles(mesh));
 		mesh.getTrace().println("# End "+getClass().getName());
-		postCheck();
+		assert mesh.checkNoDegeneratedTriangles();
+		assert mesh.checkNoInvertedTriangles();
 	}
 
 	public void setProgressBarStatus(int n)
@@ -281,7 +271,7 @@ public abstract class AbstractAlgoHalfEdge
 				redo = false;
 				while(true)
 				{
-					if (current.checkSwap3D(mesh, minCos) >= 0.0 && current.canSwapTopology())
+					if (current.checkSwap3D(mesh, minCos, maxEdgeLength) >= 0.0)
 					{
 						// Swap edge
 						for (int i = 0; i < 3; i++)
