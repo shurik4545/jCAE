@@ -255,7 +255,7 @@ public abstract class Shape<T extends Shape<T>> implements Comparable<T>
 	public T addVertex(double[] coords)
 	{
 		TopoDS_Vertex v = (TopoDS_Vertex) new BRepBuilderAPI_MakeVertex(
-			coords).shape();
+			coords).Shape();
 		T vs = getFactory().create(v, new HashMap<TopoDS_Shape, T>(), getFactory().createArray(0));
 		add(vs);
 		if(impl instanceof TopoDS_Face)
@@ -328,10 +328,10 @@ public abstract class Shape<T extends Shape<T>> implements Comparable<T>
 	public T sewed(double tolerance, boolean option, boolean cutting, boolean manifold)
 	{
 		BRepBuilderAPI_Sewing sewer=new BRepBuilderAPI_Sewing();
-		sewer.init(tolerance, option, cutting, manifold);
-		sewer.add(impl);
-		sewer.perform();
-		return getFactory().create(sewer.sewedShape(), new HashMap<TopoDS_Shape, T>(), getFactory().createArray(0));
+		sewer.Init(tolerance, option, cutting, manifold);
+		sewer.Add(impl);
+		sewer.Perform();
+		return getFactory().create(sewer.SewedShape(), new HashMap<TopoDS_Shape, T>(), getFactory().createArray(0));
 	}
 	
 	public void dump(PrintWriter writer)

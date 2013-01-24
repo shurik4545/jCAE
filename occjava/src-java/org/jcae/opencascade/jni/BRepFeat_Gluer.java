@@ -8,15 +8,15 @@
 
 package org.jcae.opencascade.jni;
 
-public class BRepFeat_SplitShape extends BRepBuilderAPI_MakeShape {
+public class BRepFeat_Gluer extends BRepBuilderAPI_MakeShape {
   private long swigCPtr;
 
-  public BRepFeat_SplitShape(long cPtr, boolean cMemoryOwn) {
-    super(OccJavaJNI.BRepFeat_SplitShape_SWIGUpcast(cPtr), cMemoryOwn);
+  public BRepFeat_Gluer(long cPtr, boolean cMemoryOwn) {
+    super(OccJavaJNI.BRepFeat_Gluer_SWIGUpcast(cPtr), cMemoryOwn);
     swigCPtr = cPtr;
   }
 
-  public static long getCPtr(BRepFeat_SplitShape obj) {
+  public static long getCPtr(BRepFeat_Gluer obj) {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 
@@ -28,7 +28,7 @@ public class BRepFeat_SplitShape extends BRepBuilderAPI_MakeShape {
     if (swigCPtr != 0) {
       if (swigCMemOwn) {
         swigCMemOwn = false;
-        OccJavaJNI.delete_BRepFeat_SplitShape(swigCPtr);
+        OccJavaJNI.delete_BRepFeat_Gluer(swigCPtr);
       }
       swigCPtr = 0;
     }
@@ -36,15 +36,15 @@ public class BRepFeat_SplitShape extends BRepBuilderAPI_MakeShape {
   }
 
   public void Build() {
-    OccJavaJNI.BRepFeat_SplitShape_Build(swigCPtr, this);
+    OccJavaJNI.BRepFeat_Gluer_Build(swigCPtr, this);
   }
 
-  public boolean IsDeleted(TopoDS_Shape S) {
-	return OccJavaJNI.BRepFeat_SplitShape_IsDeleted(swigCPtr, this, TopoDS_Shape.getCPtr(S), S);
+  public boolean IsDeleted(TopoDS_Shape F) {
+	return OccJavaJNI.BRepFeat_Gluer_IsDeleted(swigCPtr, this, TopoDS_Shape.getCPtr(F), F);
 }
 
   public TopoDS_Shape[] Modified(TopoDS_Shape F) {
-	return TopoDS_Shape.cArrayWrap(OccJavaJNI.BRepFeat_SplitShape_Modified(swigCPtr, this, TopoDS_Shape.getCPtr(F), F));
+	return TopoDS_Shape.cArrayWrap(OccJavaJNI.BRepFeat_Gluer_Modified(swigCPtr, this, TopoDS_Shape.getCPtr(F), F));
 }
 
 }

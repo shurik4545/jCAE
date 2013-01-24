@@ -43,67 +43,63 @@ public class BRepOffsetAPI_NormalProjection extends BRepBuilderAPI_MakeShape {
     this(OccJavaJNI.new_BRepOffsetAPI_NormalProjection__SWIG_1(TopoDS_Shape.getCPtr(S), S), true);
   }
 
-  public void init(TopoDS_Shape S) {
-    OccJavaJNI.BRepOffsetAPI_NormalProjection_init(swigCPtr, this, TopoDS_Shape.getCPtr(S), S);
+  public void Init(TopoDS_Shape S) {
+    OccJavaJNI.BRepOffsetAPI_NormalProjection_Init(swigCPtr, this, TopoDS_Shape.getCPtr(S), S);
   }
 
-  public void add(TopoDS_Shape ToProj) {
-    OccJavaJNI.BRepOffsetAPI_NormalProjection_add(swigCPtr, this, TopoDS_Shape.getCPtr(ToProj), ToProj);
+  public void Add(TopoDS_Shape ToProj) {
+    OccJavaJNI.BRepOffsetAPI_NormalProjection_Add(swigCPtr, this, TopoDS_Shape.getCPtr(ToProj), ToProj);
   }
 
-  public void setParams(double Tol3D, double Tol2D, GeomAbs_Shape InternalContinuity, int MaxDegree, int MaxSeg) {
-    OccJavaJNI.BRepOffsetAPI_NormalProjection_setParams(swigCPtr, this, Tol3D, Tol2D, InternalContinuity.swigValue(), MaxDegree, MaxSeg);
+  public void SetParams(double Tol3D, double Tol2D, GeomAbs_Shape InternalContinuity, int MaxDegree, int MaxSeg) {
+    OccJavaJNI.BRepOffsetAPI_NormalProjection_SetParams(swigCPtr, this, Tol3D, Tol2D, InternalContinuity.swigValue(), MaxDegree, MaxSeg);
   }
 
-  public void setMaxDistance(double MaxDist) {
-    OccJavaJNI.BRepOffsetAPI_NormalProjection_setMaxDistance(swigCPtr, this, MaxDist);
+  public void SetMaxDistance(double MaxDist) {
+    OccJavaJNI.BRepOffsetAPI_NormalProjection_SetMaxDistance(swigCPtr, this, MaxDist);
   }
 
-  public void setLimit(boolean FaceBoundaries) {
-    OccJavaJNI.BRepOffsetAPI_NormalProjection_setLimit__SWIG_0(swigCPtr, this, FaceBoundaries);
+  public void SetLimit(boolean FaceBoundaries) {
+    OccJavaJNI.BRepOffsetAPI_NormalProjection_SetLimit__SWIG_0(swigCPtr, this, FaceBoundaries);
   }
 
-  public void setLimit() {
-    OccJavaJNI.BRepOffsetAPI_NormalProjection_setLimit__SWIG_1(swigCPtr, this);
+  public void SetLimit() {
+    OccJavaJNI.BRepOffsetAPI_NormalProjection_SetLimit__SWIG_1(swigCPtr, this);
   }
 
-  public void compute3d(boolean With3d) {
-    OccJavaJNI.BRepOffsetAPI_NormalProjection_compute3d__SWIG_0(swigCPtr, this, With3d);
+  public void Compute3d(boolean With3d) {
+    OccJavaJNI.BRepOffsetAPI_NormalProjection_Compute3d__SWIG_0(swigCPtr, this, With3d);
   }
 
-  public void compute3d() {
-    OccJavaJNI.BRepOffsetAPI_NormalProjection_compute3d__SWIG_1(swigCPtr, this);
+  public void Compute3d() {
+    OccJavaJNI.BRepOffsetAPI_NormalProjection_Compute3d__SWIG_1(swigCPtr, this);
   }
 
-  public void build() {
-    OccJavaJNI.BRepOffsetAPI_NormalProjection_build(swigCPtr, this);
+  public void Build() {
+    OccJavaJNI.BRepOffsetAPI_NormalProjection_Build(swigCPtr, this);
   }
 
-  public boolean isDone() {
-	return OccJavaJNI.BRepOffsetAPI_NormalProjection_isDone(swigCPtr, this);
+  public boolean IsDone() {
+	return OccJavaJNI.BRepOffsetAPI_NormalProjection_IsDone(swigCPtr, this);
 }
 
-  public TopoDS_Shape projection() {
-    long cPtr = OccJavaJNI.BRepOffsetAPI_NormalProjection_projection(swigCPtr, this);
+  public TopoDS_Shape Projection() {
+    long cPtr = OccJavaJNI.BRepOffsetAPI_NormalProjection_Projection(swigCPtr, this);
     return (TopoDS_Shape)TopoDS_Shape.create(cPtr);
 }
 
-  public TopoDS_Shape couple(TopoDS_Edge E) {
-    long cPtr = OccJavaJNI.BRepOffsetAPI_NormalProjection_couple(swigCPtr, this, TopoDS_Edge.getCPtr(E), E);
+  public TopoDS_Shape Couple(TopoDS_Edge E) {
+    long cPtr = OccJavaJNI.BRepOffsetAPI_NormalProjection_Couple(swigCPtr, this, TopoDS_Edge.getCPtr(E), E);
     return (TopoDS_Shape)TopoDS_Shape.create(cPtr);
 }
 
-  public TopoDS_Shape[] generated(TopoDS_Shape S) {
-	return TopoDS_Shape.cArrayWrap(OccJavaJNI.BRepOffsetAPI_NormalProjection_generated(swigCPtr, this, TopoDS_Shape.getCPtr(S), S));
+  public TopoDS_Shape[] Generated(TopoDS_Shape S) {
+	return TopoDS_Shape.cArrayWrap(OccJavaJNI.BRepOffsetAPI_NormalProjection_Generated(swigCPtr, this, TopoDS_Shape.getCPtr(S), S));
 }
 
-  public TopoDS_Shape ancestor(TopoDS_Edge E) {
-    long cPtr = OccJavaJNI.BRepOffsetAPI_NormalProjection_ancestor(swigCPtr, this, TopoDS_Edge.getCPtr(E), E);
+  public TopoDS_Shape Ancestor(TopoDS_Edge E) {
+    long cPtr = OccJavaJNI.BRepOffsetAPI_NormalProjection_Ancestor(swigCPtr, this, TopoDS_Edge.getCPtr(E), E);
     return (TopoDS_Shape)TopoDS_Shape.create(cPtr);
-}
-
-  public boolean buildWire(SWIGTYPE_p_TopTools_ListOfShape Liste) {
-	return OccJavaJNI.BRepOffsetAPI_NormalProjection_buildWire(swigCPtr, this, SWIGTYPE_p_TopTools_ListOfShape.getCPtr(Liste));
 }
 
 }

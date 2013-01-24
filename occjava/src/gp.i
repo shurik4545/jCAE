@@ -367,6 +367,21 @@ class gp_Trsf2d
 };
 
 /**
+ * GP_GTrsf
+ */
+ %{#include <gp_GTrsf.hxx>%}
+ 
+%rename(GP_GTrsf) gp_GTrsf;
+
+class gp_GTrsf
+{
+	public:
+	gp_GTrsf();
+	gp_GTrsf(const gp_Trsf& T);
+
+};
+
+/**
  * GP_Circ
  */
 %{#include <gp_Circ.hxx>%}

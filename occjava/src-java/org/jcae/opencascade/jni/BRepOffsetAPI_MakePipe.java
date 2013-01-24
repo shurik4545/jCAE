@@ -39,4 +39,23 @@ public class BRepOffsetAPI_MakePipe extends BRepPrimAPI_MakeSweep {
     this(OccJavaJNI.new_BRepOffsetAPI_MakePipe(TopoDS_Wire.getCPtr(Spine), Spine, TopoDS_Shape.getCPtr(Profile), Profile), true);
   }
 
+  public void Build() {
+    OccJavaJNI.BRepOffsetAPI_MakePipe_Build(swigCPtr, this);
+  }
+
+  public TopoDS_Shape FirstShape() {
+    long cPtr = OccJavaJNI.BRepOffsetAPI_MakePipe_FirstShape(swigCPtr, this);
+    return (TopoDS_Shape)TopoDS_Shape.create(cPtr);
+}
+
+  public TopoDS_Shape LastShape() {
+    long cPtr = OccJavaJNI.BRepOffsetAPI_MakePipe_LastShape(swigCPtr, this);
+    return (TopoDS_Shape)TopoDS_Shape.create(cPtr);
+}
+
+  public TopoDS_Shape Generated(TopoDS_Shape SSpine, TopoDS_Shape SProfile) {
+    long cPtr = OccJavaJNI.BRepOffsetAPI_MakePipe_Generated(swigCPtr, this, TopoDS_Shape.getCPtr(SSpine), SSpine, TopoDS_Shape.getCPtr(SProfile), SProfile);
+    return (TopoDS_Shape)TopoDS_Shape.create(cPtr);
+}
+
 }

@@ -24,33 +24,25 @@
 %{#include <BRepAlgoAPI_Cut.hxx>%}
 %{#include <BRepAlgoAPI_Section.hxx>%}
 %{#include <gp_Pln.hxx>%}
-%{#include <Handle_Geom_Surface.hxx>%}
 
 class BRepAlgoAPI_BooleanOperation: public BRepBuilderAPI_MakeShape
 {
-	%rename(modified) Modified;
-	%rename(isDeleted) IsDeleted;
-	%rename(modified2) Modified2;
-	%rename(generated) Generated;
-	%rename(hasModified) HasModified;
-	%rename(hasGenerated) HasGenerated;
-	%rename(hasDeleted) HasDeleted;
 	BRepAlgoAPI_BooleanOperation()=0;
 	public:
-	virtual  void Build();
+	void Build();
 	const TopoDS_Shape& Shape1() const;
 	const TopoDS_Shape& Shape2() const;
 	Standard_Boolean FuseEdges() const;
 	void RefineEdges();
 	Standard_Boolean BuilderCanWork() const;
 	Standard_Integer ErrorStatus() const;
-	virtual const TopTools_ListOfShape& Modified(const TopoDS_Shape& aS) ;
-	virtual Standard_Boolean IsDeleted(const TopoDS_Shape& aS) ;
-	virtual const TopTools_ListOfShape& Modified2(const TopoDS_Shape& aS) ;
-	virtual const TopTools_ListOfShape& Generated(const TopoDS_Shape& S) ;
-	virtual Standard_Boolean HasModified() const;
-	virtual Standard_Boolean HasGenerated() const;
-	virtual Standard_Boolean HasDeleted() const;
+	const TopTools_ListOfShape& Modified(const TopoDS_Shape& aS) ;
+	Standard_Boolean IsDeleted(const TopoDS_Shape& aS) ;
+	const TopTools_ListOfShape& Modified2(const TopoDS_Shape& aS) ;
+	const TopTools_ListOfShape& Generated(const TopoDS_Shape& S) ;
+	Standard_Boolean HasModified() const;
+	Standard_Boolean HasGenerated() const;
+	Standard_Boolean HasDeleted() const;
 	void Destroy();
 	const TopTools_ListOfShape& SectionEdges();
 };
