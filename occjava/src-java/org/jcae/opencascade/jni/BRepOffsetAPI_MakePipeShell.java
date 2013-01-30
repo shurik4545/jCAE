@@ -123,8 +123,8 @@ public class BRepOffsetAPI_MakePipeShell extends BRepPrimAPI_MakeSweep {
     OccJavaJNI.BRepOffsetAPI_MakePipeShell_SetTransitionMode__SWIG_1(swigCPtr, this);
   }
 
-  public void Simulate(int NumberOfSection, SWIGTYPE_p_TopTools_ListOfShape Result) {
-    OccJavaJNI.BRepOffsetAPI_MakePipeShell_Simulate(swigCPtr, this, NumberOfSection, SWIGTYPE_p_TopTools_ListOfShape.getCPtr(Result));
+  public void Simulate(int NumberOfSection, TopoDS_Shape[] Result) {
+    OccJavaJNI.BRepOffsetAPI_MakePipeShell_Simulate(swigCPtr, this, NumberOfSection, TopoDS_Shape.cArrayUnwrap(Result));
   }
 
   public void Build() {

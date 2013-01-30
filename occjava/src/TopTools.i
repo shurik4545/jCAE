@@ -19,12 +19,12 @@
  */
 
 
-%typemap(jni) const TopTools_ListOfShape& "jlongArray"
-%typemap(jtype) const TopTools_ListOfShape& "long[]"
-%typemap(jstype) const TopTools_ListOfShape& "TopoDS_Shape[]"
+%typemap(jni) const TopTools_ListOfShape&, TopTools_ListOfShape& "jlongArray"
+%typemap(jtype) const TopTools_ListOfShape&, TopTools_ListOfShape& "long[]"
+%typemap(jstype) const TopTools_ListOfShape&, TopTools_ListOfShape& "TopoDS_Shape[]"
 
-%typemap(javain) const TopTools_ListOfShape& "TopoDS_Shape.cArrayUnwrap($javainput)"
-%typemap(javaout) const TopTools_ListOfShape& 
+%typemap(javain) const TopTools_ListOfShape&, TopTools_ListOfShape& "TopoDS_Shape.cArrayUnwrap($javainput)"
+%typemap(javaout) const TopTools_ListOfShape&, TopTools_ListOfShape& 
 {
 	return TopoDS_Shape.cArrayWrap($jnicall);
 }
@@ -49,13 +49,13 @@
 	}
 }
 
-%typemap(freearg) const TopTools_ListOfShape&
+%typemap(freearg) const TopTools_ListOfShape&, TopTools_ListOfShape&
 %{
 	delete $1;
 %}
 
 %{#include <TopTools_ListIteratorOfListOfShape.hxx>%}
-%typemap(out) const TopTools_ListOfShape&
+%typemap(out) const TopTools_ListOfShape&, TopTools_ListOfShape&
 {
 	int j,n;
 	const TopTools_ListOfShape& l = *$1;

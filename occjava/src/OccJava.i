@@ -70,6 +70,8 @@
 %include "BRepLib.i"
 %include "BRepFilletAPI.i"
 %include "BRepFeat.i"
+%include "BRepFill.i"
+%include "BRepMesh.i"
 %include "BRepCheck.i"
 %include "ShapeBuild.i"
 %include "XSControl.i"
